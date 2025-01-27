@@ -21,7 +21,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - Tue 28 Jan
 - - [x] Map format and loading.
 - Wed 29 Jan
-- - [ ] Physics. Get motion and collisions feeling good.
+- - [x] Physics. Get motion and collisions feeling good.
 - - [ ] Proper graphics.
 - Thu 30 Jan
 - - [ ] Deliveries.
@@ -33,6 +33,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [ ] Music.
 - - [ ] Sound effects.
 - - [ ] Decorative touches.
+- - [ ] physics: I glossed over corner collisions. Does it matter?
 - - [ ] Plan for game to be complete by EOD.
 - Sun 2 Feb
 - - [ ] Itch page, ancillary bits, final upload.

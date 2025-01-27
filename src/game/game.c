@@ -60,8 +60,8 @@ int game_update(struct game *game,double elapsed) {
       game->racer.vy*=adj;
     }
   } else {
-    game->racer.vx*=0.990;//TODO proper deceleration... involves a pow() somehow
-    game->racer.vy*=0.990;
+    game->racer.vx*=0.980;//TODO proper deceleration... involves a pow() somehow
+    game->racer.vy*=0.980;
   }
   game->racer.x+=game->racer.vx*elapsed;
   game->racer.y+=game->racer.vy*elapsed;
@@ -69,6 +69,8 @@ int game_update(struct game *game,double elapsed) {
   double worldh=(double)(game->map->h*NS_sys_tilesize);
   if (game->racer.x<0.0) game->racer.x=0.0; else if (game->racer.x>worldw) game->racer.x=worldw;
   if (game->racer.y<0.0) game->racer.y=0.0; else if (game->racer.y>worldh) game->racer.y=worldh;
+  
+  physics_update(game,elapsed);
   
   return 0;
 }

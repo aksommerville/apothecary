@@ -14,6 +14,10 @@ struct map {
   int cmdc;
   const uint8_t *physics;
   uint16_t imageid;
+  struct sbox { // Static solids.
+    double x,y,w,h;
+  } *sboxv;
+  int sboxc,sboxa;
   //TODO pre-pull important fields
 };
 
