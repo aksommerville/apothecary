@@ -24,6 +24,19 @@ int egg_client_init() {
   if (egg_texture_load_image(g.texid_hero=egg_texture_new(),RID_image_hero)<0) return -1;
   if (egg_texture_load_image(g.texid_tiles=egg_texture_new(),RID_image_tiles)<0) return -1;
   
+  // Iterate ROM and install resources we need to track -- map, tilesheet, sprite
+  struct rom_reader reader;
+  if (rom_reader_init(&reader,g.rom,g.romc)<0) return -1;
+  struct rom_res *res;
+  while (res=rom_reader_next(&reader)) {
+    switch (res->tid) {
+      case EGG_TID_map: if (map_install(res->rid,res->v,res->c)<0) return -1; break;
+      case EGG_TID_tilesheet: if (tilesheet_install(res->rid,res->v,res->c)<0) return -1; break;
+      case EGG_TID_sprite: if (sprdef_install(res->rid,res->v,res->c)<0) return -1; break;
+    }
+  }
+  if (restype_ready()<0) return -1;
+  
   srand_auto();
   
   return 0;

@@ -5,8 +5,10 @@
 #include "opt/stdlib/egg-stdlib.h"
 #include "opt/graf/graf.h"
 #include "opt/text/text.h"
+#include "opt/rom/rom.h"
 #include "egg_rom_toc.h"
 #include "shared_symbols.h"
+#include "restype.h"
 
 struct game;
 

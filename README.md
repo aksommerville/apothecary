@@ -17,9 +17,9 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 
 - Mon 27 Jan
 - - [x] Hero render and motion.
-- - [ ] Scrolling world.
+- - [x] Scrolling world.
 - Tue 28 Jan
-- - [ ] Map format and loading.
+- - [x] Map format and loading.
 - Wed 29 Jan
 - - [ ] Physics. Get motion and collisions feeling good.
 - - [ ] Proper graphics.
