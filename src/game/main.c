@@ -39,6 +39,10 @@ int egg_client_init() {
   
   srand_auto();
   
+  egg_play_song(RID_song_race_to_the_bottom,0,1);
+  //egg_play_song(RID_song_emotional_support_bird,0,1);
+  //egg_play_song(RID_song_thirty_seconds,0,1);
+  
   return 0;
 }
 
