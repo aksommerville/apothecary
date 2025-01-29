@@ -20,13 +20,50 @@ static int map_row_solid(const uint8_t *physics,const uint8_t *p,int c) {
   for (;c-->0;p++) if (physics[*p]!=NS_physics_solid) return 0;
   return 1;
 }
+
+static struct sbox *map_sbox_add(struct map *map) {
+  if (map->sboxc>=map->sboxa) {
+    int na=map->sboxa+128;
+    if (na>INT_MAX/sizeof(struct sbox)) return 0;
+    void *nv=realloc(map->sboxv,sizeof(struct sbox)*na);
+    if (!nv) return 0;
+    map->sboxv=nv;
+    map->sboxa=na;
+  }
+  return map->sboxv+map->sboxc++;
+}
  
 static int map_generate_sboxv(struct map *map) {
+  struct sbox *sbox;
   map->sboxc=0;
   int cellc=map->w*map->h;
   uint8_t *visited=calloc(cellc,1);
   if (!visited) return -1;
   
+  // Add a huge sbox on each of the four edges.
+  const double HUGE=600.0;
+  if (!(sbox=map_sbox_add(map))) return -1;
+  sbox->x=-HUGE;
+  sbox->y=-HUGE;
+  sbox->w=HUGE;
+  sbox->h=map->h*NS_sys_tilesize+HUGE*2.0;
+  if (!(sbox=map_sbox_add(map))) return -1;
+  sbox->x=-HUGE;
+  sbox->y=-HUGE;
+  sbox->w=map->w*NS_sys_tilesize+HUGE*2.0;
+  sbox->h=HUGE;
+  if (!(sbox=map_sbox_add(map))) return -1;
+  sbox->x=-HUGE;
+  sbox->y=map->h*NS_sys_tilesize;
+  sbox->w=map->w*NS_sys_tilesize+HUGE*2.0;
+  sbox->h=HUGE;
+  if (!(sbox=map_sbox_add(map))) return -1;
+  sbox->x=map->w*NS_sys_tilesize;
+  sbox->y=-HUGE;
+  sbox->w=HUGE;
+  sbox->h=map->h*NS_sys_tilesize+HUGE*2.0;
+  
+  // Then condense solid cells into rectangles and add an sbox for each.
   int p=0,row=0;
   for (;row<map->h;row++) {
     int col=0;
@@ -48,15 +85,7 @@ static int map_generate_sboxv(struct map *map) {
       }
       
       // Add to sboxv.
-      if (map->sboxc>=map->sboxa) {
-        int na=map->sboxa+128;
-        if (na>INT_MAX/sizeof(struct sbox)) return -1;
-        void *nv=realloc(map->sboxv,sizeof(struct sbox)*na);
-        if (!nv) return -1;
-        map->sboxv=nv;
-        map->sboxa=na;
-      }
-      struct sbox *sbox=map->sboxv+map->sboxc++;
+      if (!(sbox=map_sbox_add(map))) return -1;
       sbox->x=col*NS_sys_tilesize;
       sbox->y=row*NS_sys_tilesize;
       sbox->w=colc*NS_sys_tilesize;
@@ -80,6 +109,27 @@ int restype_ready() {
     map->physics=tilesheet_get(map->imageid);
     if (map_generate_sboxv(map)<0) return -1;
   }
+  return 0;
+}
+
+/* Add dropoff.
+ * argv: [0]=x [1]=y [2]=tileid [3]=difficulty [4..7]=reserved
+ */
+ 
+static int map_dropoff_add(struct map *map,const uint8_t *argv) {
+  if (map->dropoffc>=map->dropoffa) {
+    int na=map->dropoffa+32;
+    if (na>INT_MAX/sizeof(struct dropoff)) return -1;
+    void *nv=realloc(map->dropoffv,sizeof(struct dropoff)*na);
+    if (!nv) return -1;
+    map->dropoffv=nv;
+    map->dropoffa=na;
+  }
+  struct dropoff *dropoff=map->dropoffv+map->dropoffc++;
+  dropoff->x=argv[0];
+  dropoff->y=argv[1];
+  dropoff->tileid=argv[2];
+  dropoff->difficulty=argv[3];
   return 0;
 }
 
@@ -112,6 +162,9 @@ int map_install(int rid,const void *serial,int serialc) {
   while (rom_command_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
       case CMD_map_image: dst->imageid=(cmd.argv[0]<<8)|cmd.argv[1]; break;
+      case CMD_map_hero: dst->herox=cmd.argv[0]; dst->heroy=cmd.argv[1]; break;
+      case CMD_map_pickup: dst->pickupx=cmd.argv[0]; dst->pickupy=cmd.argv[1]; break;
+      case CMD_map_dropoff: if (map_dropoff_add(dst,cmd.argv)<0) return -1; break;
     }
   }
   return 0;

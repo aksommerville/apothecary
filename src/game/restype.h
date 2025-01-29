@@ -18,7 +18,14 @@ struct map {
     double x,y,w,h;
   } *sboxv;
   int sboxc,sboxa;
-  //TODO pre-pull important fields
+  uint8_t herox,heroy;
+  uint8_t pickupx,pickupy;
+  struct dropoff {
+    uint8_t x,y;
+    uint8_t tileid;
+    uint8_t difficulty;
+  } *dropoffv;
+  int dropoffc,dropoffa;
 };
 
 struct sprdef { // "sprite" resource

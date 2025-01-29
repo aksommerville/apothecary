@@ -8,6 +8,36 @@ void game_del(struct game *game) {
   free(game);
 }
 
+/* Read the initial map commands.
+ */
+ 
+static int game_process_map_commands(struct game *game) {
+  int heroc=0,pickupc=0;
+  struct rom_command_reader reader={.v=game->map->cmdv,.c=game->map->cmdc};
+  struct rom_command cmd;
+  while (rom_command_reader_next(&cmd,&reader)>0) {
+    switch (cmd.opcode) {
+      case CMD_map_hero: {
+          heroc++;
+          game->racer.x=(cmd.argv[0]+0.5)*NS_sys_tilesize;
+          game->racer.y=(cmd.argv[1]+0.5)*NS_sys_tilesize;
+        } break;
+      case CMD_map_pickup: {
+          pickupc++;
+          game->target.x=(cmd.argv[0]+0.5)*NS_sys_tilesize;
+          game->target.y=(cmd.argv[1]+0.5)*NS_sys_tilesize;
+          game->target.type=NS_target_pickup;
+          game->target.tileid=0x12; //TODO Will this always be the same thing? If not, how to select?
+        } break;
+    }
+  }
+  if ((heroc!=1)||(pickupc!=1)||!game->map->dropoffc) {
+    fprintf(stderr,"map:%d invalid: heroc=%d pickupc=%d dropoffc=%d\n",game->map->id,heroc,pickupc,game->map->dropoffc);
+    return -1;
+  }
+  return 0;
+}
+
 /* New.
  */
  
@@ -15,20 +45,16 @@ struct game *game_new() {
   struct game *game=calloc(1,sizeof(struct game));
   if (!game) return 0;
   
-  game->racer.x=FBW*0.5;//TODO starting position from map
-  game->racer.y=FBH*0.5;
-  game->racer.t=0.0;
-  
-  game->target.x=600.0;//TODO starting position from map
-  game->target.y=400.0;
-  game->target.type=NS_target_pickup;
-  game->target.tileid=0x12;
-  
   game->clock=30.0;
   game->time_bonus=20;
   game->score=0;
   
   if (!(game->map=map_get(RID_map_scratch))) {
+    game_del(game);
+    return 0;
+  }
+  
+  if (game_process_map_commands(game)<0) {
     game_del(game);
     return 0;
   }
@@ -56,6 +82,9 @@ void game_input(struct game *game,int input,int pvinput) {
  */
  
 static void target_reached(struct game *game) {
+
+  /* Award time bonus and score.
+   */
   if (game->time_bonus>0) {
     //TODO Report time bonus.
     game->clock+=game->time_bonus;
@@ -63,21 +92,46 @@ static void target_reached(struct game *game) {
   } else {
     //TODO Report "no time bonus"?
   }
-  //TODO decide where to put the next one
-  int col,row;
-  do {
-    col=rand()%game->map->w;
-    row=rand()%game->map->h;
-  } while (game->map->physics[game->map->v[row*game->map->w+col]]==NS_physics_solid);
-  game->target.x=(col+0.5)*NS_sys_tilesize;
-  game->target.y=(row+0.5)*NS_sys_tilesize;
-  if (game->target.type==NS_target_pickup) {
-    game->target.type=NS_target_dropoff;
-    game->target.tileid=0x13;
-  } else {
+  if (game->target.type==NS_target_dropoff) {
     game->score++;
+  }
+  
+  /* If we were dropping off, start picking up.
+   * Easy: Pickup is always at the apothecary.
+   */
+  if (game->target.type==NS_target_dropoff) {
     game->target.type=NS_target_pickup;
-    game->target.tileid=0x12;
+    game->target.tileid=0x12; // TODO variety?
+    game->target.x=(game->map->pickupx+0.5)*NS_sys_tilesize;
+    game->target.y=(game->map->pickupy+0.5)*NS_sys_tilesize;
+  
+  /* If we were picking up, choose an appropriate dropoff.
+   */
+  } else {
+    int candidatec=0,i;
+    const struct dropoff *dropoff=game->map->dropoffv;
+    for (i=game->map->dropoffc;i-->0;dropoff++) {
+      if (dropoff->difficulty>game->score) continue;
+      candidatec++;
+    }
+    dropoff=game->map->dropoffv;
+    if (!candidatec) {
+      fprintf(stderr,"map:%d does not contain any zero-difficulty dropoff\n",game->map->id);
+    } else {
+      int choice=rand()%candidatec;
+      const struct dropoff *q=game->map->dropoffv;
+      for (i=game->map->dropoffc;i-->0;q++) {
+        if (q->difficulty>game->score) continue;
+        if (!choice--) {
+          dropoff=q;
+          break;
+        }
+      }
+    }
+    game->target.type=NS_target_dropoff;
+    game->target.tileid=dropoff->tileid;
+    game->target.x=(dropoff->x+0.5)*NS_sys_tilesize;
+    game->target.y=(dropoff->y+0.5)*NS_sys_tilesize;
   }
 }
 
@@ -146,10 +200,6 @@ int game_update(struct game *game,double elapsed) {
    */
   game->racer.x+=game->racer.vx*elapsed;
   game->racer.y+=game->racer.vy*elapsed;
-  double worldw=(double)(game->map->w*NS_sys_tilesize);
-  double worldh=(double)(game->map->h*NS_sys_tilesize);
-  if (game->racer.x<0.0) game->racer.x=0.0; else if (game->racer.x>worldw) game->racer.x=worldw;
-  if (game->racer.y<0.0) game->racer.y=0.0; else if (game->racer.y>worldh) game->racer.y=worldh;
   
   /* General physics.
    * (in truth, it only corrects hero against static geometry, it's very simple).

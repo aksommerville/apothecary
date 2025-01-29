@@ -23,13 +23,14 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - Wed 29 Jan
 - - [x] Physics. Get motion and collisions feeling good.
 - - [x] Proper graphics for Dot.
-- - [ ] World layout.
-- - [ ] Generate sbox for the world edges, then we don't have to treat them special.
+- - [x] World layout.
+- - [x] Generate sbox for the world edges, then we don't have to treat them special.
 - Thu 30 Jan
 - - [x] Deliveries.
 - - [x] Clock.
-- - [ ] Start, pickup, and dropoff positions per map.
+- - [x] Start, pickup, and dropoff positions per map.
 - - [ ] Visual indicator at pickup and dropoff. Report score and time bonus.
+- - [ ] Make a couple different building patterns, then populate east side.
 - Fri 31 Jan
 - - [x] Menus.
 - - - [x] Hello
@@ -43,7 +44,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [ ] gameover: Don't say "new high score" when it's a tie. New message for that.
 - Sat 1 Feb
 - - [x] Music.
-- - [ ] French and Spanish text, why not.
+- - [ ] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
 - - [ ] Thirty Seconds doesn't loop quite right.
 - - [ ] Emotional Support Bird: Add arpeggio peak notes to bass in second pass. (right hand does that on a piano, but with different voices one notices a gap).
 - - [ ] Sound effects.
