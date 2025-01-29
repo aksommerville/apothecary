@@ -7,6 +7,9 @@
 #define FLY_ACCEL 250.0 /* px/s**2 */
 #define FLY_SPEED_LIMIT 300.0 /* px/s */
 #define FLY_SPEED_LIMIT_2 (FLY_SPEED_LIMIT*FLY_SPEED_LIMIT)
+#define NATURAL_DECELERATION 200.0 /* px/s**2 */
+#define BRAKE_DECELERATION 500.0 /* px/s**2 */
+#define TURN_DECELERATION 100.0 /* px/s**2 */
 #define HERO_RADIUS 6.0 /* px */
 #define COLLISION_DAMP -0.250
 #define TARGET_DISTANCE 10.0
@@ -29,7 +32,7 @@ struct target {
 };
 
 struct bonus_toast {
-  double x,y; // world pixels (TODO or should it be locked to the screen?)
+  double x,y; // world pixels
   int v; // seconds
   double ttl;
 };

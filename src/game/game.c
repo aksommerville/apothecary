@@ -176,6 +176,21 @@ int game_update(struct game *game,double elapsed) {
   /* Poll input. Update hero's angle and velocity.
    */
   if (game->running) {
+    if (game->accel&&game->indx) {
+      // If you turn while accelerating, first reduce velocity just a hair.
+      // This is a penalty for turning, but also makes turns tighter.
+      double loss=TURN_DECELERATION*elapsed;
+      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
+      double v=sqrt(v2);
+      if (loss>=v) {
+        game->racer.vx=0.0;
+        game->racer.vy=0.0;
+      } else {
+        double adj=(v-loss)/v;
+        game->racer.vx*=adj;
+        game->racer.vy*=adj;
+      }
+    }
     if (game->indx) {
       game->racer.t+=TURN_SPEED*elapsed*game->indx;
       if (game->racer.t>M_PI) game->racer.t-=M_PI*2.0;
@@ -192,20 +207,32 @@ int game_update(struct game *game,double elapsed) {
         game->racer.vx*=adj;
         game->racer.vy*=adj;
       }
-    } else if (game->brake) {
-      game->racer.vx*=0.940;
-      game->racer.vy*=0.940;
-    } else {
-      game->racer.vx*=0.980;//TODO proper deceleration... involves a pow() somehow
-      game->racer.vy*=0.980;
     }
-  } else {
-    // Game ended. Stop updating per input, and just wind down velocity.
-    game->racer.vx*=0.980;
-    game->racer.vy*=0.980;
   }
   
-  /* Apply hero velocity and clamp to world.
+  /* If the brake is on, accelerator is off, or game is ended, decelerate.
+   */
+  if (!game->running||game->brake||!game->accel) {
+    double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
+    if (v2>0.0) {
+      double v=sqrt(v2);
+      double rate;
+      if (!game->running) rate=NATURAL_DECELERATION;
+      else if (game->brake) rate=BRAKE_DECELERATION;
+      else rate=NATURAL_DECELERATION;
+      double loss=rate*elapsed;
+      if (loss>=v) {
+        game->racer.vx=0.0;
+        game->racer.vy=0.0;
+      } else {
+        double adj=(v-loss)/v;
+        game->racer.vx*=adj;
+        game->racer.vy*=adj;
+      }
+    }
+  }
+  
+  /* Apply hero velocity optimistically.
    */
   game->racer.x+=game->racer.vx*elapsed;
   game->racer.y+=game->racer.vy*elapsed;
