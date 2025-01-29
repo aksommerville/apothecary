@@ -24,6 +24,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Physics. Get motion and collisions feeling good.
 - - [x] Proper graphics for Dot.
 - - [ ] World layout.
+- - [ ] Generate sbox for the world edges, then we don't have to treat them special.
 - Thu 30 Jan
 - - [x] Deliveries.
 - - [x] Clock.

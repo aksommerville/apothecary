@@ -51,10 +51,17 @@ static void game_draw_hero(struct game *game,int dstx,int dsty) {
   }
 
   // First a shadow, offset down a little.
+  int shadowdy=4;
+  int col=(int)game->racer.x/NS_sys_tilesize;
+  int row=(int)game->racer.y/NS_sys_tilesize;
+  if ((col>=0)&&(col<game->map->w)&&(row>=0)&&(row<game->map->h)) {
+    uint8_t physics=game->map->physics[game->map->v[row*game->map->w+col]];
+    if (physics==NS_physics_water) shadowdy+=2;
+  }
   graf_set_alpha(&g.graf,0x80);
   graf_set_tint(&g.graf,0x000000ff);
   graf_draw_mode7(&g.graf,g.texid_hero,
-    dstx,dsty+4,
+    dstx,dsty+shadowdy,
     srcx,srcy,NS_sys_tilesize*3,NS_sys_tilesize*3,0.5f,0.5f,
     game->racer.t,1
   );

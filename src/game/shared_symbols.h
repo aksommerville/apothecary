@@ -27,6 +27,7 @@
 
 #define NS_physics_vacant 0
 #define NS_physics_solid  1
+#define NS_physics_water 2
 
 #define NS_target_pickup 1
 #define NS_target_dropoff 2
