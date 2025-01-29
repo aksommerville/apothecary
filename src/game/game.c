@@ -78,6 +78,16 @@ void game_input(struct game *game,int input,int pvinput) {
   game->brake=input&EGG_BTN_WEST;
 }
 
+/* Start a new bonus toast.
+ */
+ 
+static void game_set_bonus_toast(struct game *game,int v,double x,double y) {
+  game->bonus_toast.v=v;
+  game->bonus_toast.x=x;
+  game->bonus_toast.y=y-NS_sys_tilesize;
+  game->bonus_toast.ttl=BONUS_TOAST_TTL;
+}
+
 /* Reached the target.
  */
  
@@ -86,11 +96,9 @@ static void target_reached(struct game *game) {
   /* Award time bonus and score.
    */
   if (game->time_bonus>0) {
-    //TODO Report time bonus.
+    game_set_bonus_toast(game,game->time_bonus,game->target.x,game->target.y);
     game->clock+=game->time_bonus;
     game->time_bonus--;
-  } else {
-    //TODO Report "no time bonus"?
   }
   if (game->target.type==NS_target_dropoff) {
     game->score++;
@@ -163,6 +171,7 @@ int game_update(struct game *game,double elapsed) {
     game->dotanimclock+=0.125;
     if (++(game->dotanimframe)>=2) game->dotanimframe=0;
   }
+  if (game->bonus_toast.ttl>0.0) game->bonus_toast.ttl-=elapsed;
 
   /* Poll input. Update hero's angle and velocity.
    */

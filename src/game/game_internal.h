@@ -14,6 +14,7 @@
 #define ARROW_CLOCK_PERIOD 1.000
 #define GAME_END_TIME 3.0
 #define GAME_END_FADE_TIME 1.0
+#define BONUS_TOAST_TTL 1.5
 
 struct racer {
   double x,y; // world pixels
@@ -25,6 +26,12 @@ struct target {
   double x,y; // world pixels
   int type; // NS_target_*; zero for none
   uint8_t tileid;
+};
+
+struct bonus_toast {
+  double x,y; // world pixels (TODO or should it be locked to the screen?)
+  int v; // seconds
+  double ttl;
 };
 
 struct game {
@@ -42,6 +49,7 @@ struct game {
   double endtime; // Counts down once !running.
   double dotanimclock;
   int dotanimframe; // 0..1. Updates constantly, even when not animated.
+  struct bonus_toast bonus_toast;
 };
 
 void physics_update(struct game *game,double elapsed);

@@ -185,7 +185,21 @@ void game_render(struct game *game) {
     game_draw_arrow(game,camerax,cameray,targetx,targety);
   }
   
-  //TODO Toasts eg "+10 s"
+  /* Bonus toast if present.
+   */
+  if (game->bonus_toast.ttl>0.0) {
+    int dstx=(int)game->bonus_toast.x-camerax-7;
+    int dsty=(int)game->bonus_toast.y-cameray;
+    dsty-=(int)(((BONUS_TOAST_TTL-game->bonus_toast.ttl)*NS_sys_tilesize)/BONUS_TOAST_TTL);
+    int alpha=(game->bonus_toast.ttl*255.0)/BONUS_TOAST_TTL;
+    if (alpha<0xff) graf_set_alpha(&g.graf,alpha);
+    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,0x3b,0); dstx+=7; // '+', not ascii
+    if (game->bonus_toast.v>=10) {
+      graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+(game->bonus_toast.v/10)%10,0); dstx+=7;
+    }
+    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+game->bonus_toast.v%10,0);
+    graf_set_alpha(&g.graf,0xff);
+  }
   
   /* Show clock in the top right.
    */

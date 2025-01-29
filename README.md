@@ -29,7 +29,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Deliveries.
 - - [x] Clock.
 - - [x] Start, pickup, and dropoff positions per map.
-- - [ ] Visual indicator at pickup and dropoff. Report score and time bonus.
+- - [x] Visual indicator at pickup and dropoff. Report score and time bonus.
 - - [x] Make a couple different building patterns, then populate east side.
 - Fri 31 Jan
 - - [x] Menus.
@@ -73,7 +73,7 @@ Stretch goals.
 
 Mon 27 Jan: Flying, map loading, music. Rather more than I expected to get done day one!
 Tue 28 Jan: Random pickup and deliver. Clock, score. Preliminary hello and gameover splashes.
-Wed 29 Jan: 
+Wed 29 Jan: Prettier graphics for Dot. Real map.
 Thu 30 Jan: 
 Fri 31 Jan: 
 Sat 1 Feb: 
