@@ -12,6 +12,8 @@
 #define TARGET_DISTANCE 10.0
 #define TARGET_DISTANCE_2 (TARGET_DISTANCE*TARGET_DISTANCE)
 #define ARROW_CLOCK_PERIOD 1.000
+#define GAME_END_TIME 3.0
+#define GAME_END_FADE_TIME 1.0
 
 struct racer {
   double x,y; // world pixels
@@ -37,6 +39,7 @@ struct game {
   int time_bonus; // Amount for next bonus.
   double arrowclock; // Counts down.
   int score; // ie deliveries completed
+  double endtime; // Counts down once !running.
 };
 
 void physics_update(struct game *game,double elapsed);

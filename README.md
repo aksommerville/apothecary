@@ -30,11 +30,12 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [ ] Start, pickup, and dropoff positions per map.
 - - [ ] Visual indicator at pickup and dropoff. Report score and time bonus.
 - Fri 31 Jan
-- - [ ] Menus.
-- - - [ ] Hello
-- - - [ ] Game over
-- - [ ] Persist high score.
-- - [ ] Fade out after game ends, then switch to the game over screen. 3 seconds or so?
+- - [x] Menus.
+- - - [x] Hello
+- - - [x] Game over
+- - [x] Persist high score.
+- - [x] Fade out after game ends, then switch to the game over screen. 3 seconds or so?
+- - [ ] Text for hello. My name, date, mention Heaven Jam...
 - Sat 1 Feb
 - - [x] Music.
 - - [ ] Sound effects.
@@ -60,7 +61,7 @@ Stretch goals.
 ## Progress Log
 
 Mon 27 Jan: Flying, map loading, music. Rather more than I expected to get done day one!
-Tue 28 Jan: 
+Tue 28 Jan: Random pickup and deliver. Clock, score. Preliminary hello and gameover splashes.
 Wed 29 Jan: 
 Thu 30 Jan: 
 Fri 31 Jan: 

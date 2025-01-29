@@ -23,6 +23,7 @@ int egg_client_init() {
   
   if (egg_texture_load_image(g.texid_hero=egg_texture_new(),RID_image_hero)<0) return -1;
   if (egg_texture_load_image(g.texid_tiles=egg_texture_new(),RID_image_tiles)<0) return -1;
+  if (egg_texture_load_image(g.texid_gross=egg_texture_new(),RID_image_gross)<0) return -1;
   
   // Iterate ROM and install resources we need to track -- map, tilesheet, sprite
   struct rom_reader reader;
@@ -37,13 +38,46 @@ int egg_client_init() {
   }
   if (restype_ready()<0) return -1;
   
+  char tmp[2];
+  int tmpc=egg_store_get(tmp,2,"hiscore",7);
+  if ((tmpc==2)&&(tmp[0]>='0')&&(tmp[0]<='9')&&(tmp[1]>='0')&&(tmp[1]<='9')) {
+    g.hiscore=(tmp[0]-'0')*10+(tmp[1]-'0');
+  }
+  
   srand_auto();
   
-  egg_play_song(RID_song_race_to_the_bottom,0,1);
-  //egg_play_song(RID_song_emotional_support_bird,0,1);
-  //egg_play_song(RID_song_thirty_seconds,0,1);
-  
   return 0;
+}
+
+static void main_begin_gameover() {
+  if (g.gameover) gameover_del(g.gameover);
+  if (!(g.gameover=gameover_new())) { egg_terminate(1); return; }
+}
+
+static void main_begin_game() {
+  if (g.game) game_del(g.game);
+  if (!(g.game=game_new())) { egg_terminate(1); return; }
+  if (g.hello) {
+    hello_del(g.hello);
+    g.hello=0;
+  }
+  if (g.gameover) {
+    gameover_del(g.gameover);
+    g.gameover=0;
+  }
+}
+
+static void main_begin_hello() {
+  if (g.hello) hello_del(g.hello);
+  if (!(g.hello=hello_new())) { egg_terminate(1); return; }
+  if (g.game) {
+    game_del(g.game);
+    g.game=0;
+  }
+  if (g.gameover) {
+    gameover_del(g.gameover);
+    g.gameover=0;
+  }
 }
 
 void egg_client_update(double elapsed) {
@@ -51,28 +85,41 @@ void egg_client_update(double elapsed) {
   int input=egg_input_get_one(0);
   if (input!=g.pvinput) {
     if ((input&EGG_BTN_AUX3)&&!(g.pvinput&EGG_BTN_AUX3)) { egg_terminate(0); return; }
-    if (g.game) game_input(g.game,input,g.pvinput);
+    if (g.gameover) gameover_input(g.gameover,input,g.pvinput);
+    else if (g.game) game_input(g.game,input,g.pvinput);
+    else if (g.hello) hello_input(g.hello,input,g.pvinput);
     g.pvinput=input;
   }
   
-  if (g.game) {
+  if (g.gameover) {
+    if (gameover_update(g.gameover,elapsed)<0) {
+      main_begin_hello();
+    }
+  } else if (g.game) {
     if (game_update(g.game,elapsed)<0) {
-      game_del(g.game);
-      g.game=0;
+      main_begin_gameover();
+    }
+  } else if (g.hello) {
+    if (hello_update(g.hello,elapsed)<0) {
+      main_begin_game();
     }
   } else {
-    //TODO Other top-level modes, eg menu.
-    if (!(g.game=game_new())) {
-      egg_terminate(1);
-      return;
-    }
+    main_begin_hello();
   }
 }
 
 void egg_client_render() {
   graf_reset(&g.graf);
-  if (g.game) {
-    game_render(g.game);
-  }
+  if (g.gameover) gameover_render(g.gameover);
+  else if (g.game) game_render(g.game);
+  else if (g.hello) hello_render(g.hello);
   graf_flush(&g.graf);
+}
+
+void set_hiscore(int score) {
+  if (score>99) score=99;
+  if (score<=g.hiscore) return;
+  g.hiscore=score;
+  char tmp[2]={'0'+score/10,'0'+score%10};
+  egg_store_set("hiscore",7,tmp,2);
 }

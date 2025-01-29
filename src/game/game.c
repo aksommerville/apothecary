@@ -35,6 +35,8 @@ struct game *game_new() {
   
   game->running=1;
   
+  egg_play_song(RID_song_race_to_the_bottom,0,1);
+  
   return game;
 }
 
@@ -90,11 +92,18 @@ int game_update(struct game *game,double elapsed) {
     if ((game->clock-=elapsed)<=0.0) {
       game->clock=0.0;
       game->running=0;
+      game->endtime=GAME_END_TIME;
+      set_hiscore(game->score);
       egg_play_song(RID_song_emotional_support_bird,0,1);
     }
   }
   if ((game->arrowclock-=elapsed)<=0.0) {
     game->arrowclock+=ARROW_CLOCK_PERIOD;
+  }
+  if (!game->running) {
+    if ((game->endtime-=elapsed)<=0.0) {
+      return -1;
+    }
   }
 
   /* Poll input. Update hero's angle and velocity.
@@ -309,5 +318,14 @@ void game_render(struct game *game) {
     if (rscr>99) rscr=99; else if (rscr<0) rscr=0;
     graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+rscr/10,0); dstx+=xstride;
     graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+rscr%10,0);
+  }
+  
+  /* If we're ended, fade to black.
+   */
+  if (!game->running&&(game->endtime<GAME_END_FADE_TIME)) {
+    int alpha=256.0-(game->endtime*256.0)/GAME_END_FADE_TIME;
+    if (alpha<=0) return;
+    if (alpha>0xff) alpha=0xff;
+    graf_draw_rect(&g.graf,0,0,FBW,FBH,0x00000000|alpha);
   }
 }
