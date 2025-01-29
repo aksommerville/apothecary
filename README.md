@@ -31,6 +31,10 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Start, pickup, and dropoff positions per map.
 - - [x] Visual indicator at pickup and dropoff. Report score and time bonus.
 - - [x] Make a couple different building patterns, then populate east side.
+- - [ ] !!!!!! I think we've got scoring backward.
+- - - Instead of testing how many deliveries you can make in a fixed time, we should test how much time you take to make a fixed set of deliveries.
+- - - Ten deliveries, say? And the order will be random each time. So scores are comparable but you can't do it blindfolded.
+- - - What's nice about that is it's not quantized like delivery counts. You score like 2:04.123, and in the future you could edge that out by a fraction of a second.
 - Fri 31 Jan
 - - [x] Menus.
 - - - [x] Hello
@@ -41,7 +45,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [ ] Settings: Language, Music, Sound, Zap high score, Configure input.
 - - [x] Text for hello. My name, date, mention Heaven Jam...
 - - [x] hello: When Dot flies leftward, scale her down a bit, tint a bit to black, and render behind the title.
-- - [ ] gameover: Don't say "new high score" when it's a tie. New message for that.
+- - [x] gameover: Don't say "new high score" when it's a tie. New message for that.
 - - [x] Physics: Tighten up cornering and braking, and ensure when pressing into a wall, direction still shifts as if you were free -- it doesn't right now, and it's a little weird.
 - Sat 1 Feb
 - - [x] Music.

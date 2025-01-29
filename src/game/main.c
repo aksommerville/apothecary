@@ -119,8 +119,10 @@ void egg_client_render() {
 }
 
 void set_hiscore(int score) {
+  g.hiscore_is_new=0;
   if (score>99) score=99;
   if (score<=g.hiscore) return;
+  g.hiscore_is_new=1;
   g.hiscore=score;
   char tmp[2]={'0'+score/10,'0'+score%10};
   egg_store_set("hiscore",7,tmp,2);

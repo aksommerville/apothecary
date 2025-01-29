@@ -57,12 +57,17 @@ static int gameover_render_message(struct gameover *go) {
   dsty+=lineh;
   
   // "New high score" or report the existing one.
-  if (score>=g.hiscore) {
+  if (g.hiscore_is_new) {
     srcc=strings_get(&src,1,8);
     w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,src,srcc,0xffffffff);
     if (w1>w) w=w1;
     dsty+=lineh;
-  } else {
+  } else if (score&&(score==g.hiscore)) {
+    srcc=strings_get(&src,1,13);
+    w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,src,srcc,0xffffffff);
+    if (w1>w) w=w1;
+    dsty+=lineh;
+  } else if (g.hiscore) {
     struct strings_insertion ins={'i',.i=g.hiscore};
     int textc=strings_format(text,sizeof(text),1,9,&ins,1);
     if ((textc<1)||(textc>sizeof(text))) textc=0;

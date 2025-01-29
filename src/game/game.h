@@ -34,6 +34,7 @@ extern struct g {
   int texid_gross;
   
   int hiscore;
+  int hiscore_is_new;
 } g;
 
 // Noop if the existing hiscore is higher.
