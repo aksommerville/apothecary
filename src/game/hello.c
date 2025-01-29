@@ -59,7 +59,7 @@ static void hello_next_message(struct hello *hello) {
   hello->msgp++;
   if ((hello->msgp<0)||(hello->msgp>=sizeof(messagev)/sizeof(messagev[0]))) hello->msgp=0;
   egg_texture_del(hello->msg_texid);
-  hello->msg_texid=font_texres_oneline(g.font,1,messagev[hello->msgp],FBW,0xffffffff);
+  hello->msg_texid=font_texres_oneline(g.font,1,messagev[hello->msgp],FBW,0x808080ff);
   egg_texture_get_status(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
 }
 

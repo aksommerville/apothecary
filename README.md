@@ -30,7 +30,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Clock.
 - - [x] Start, pickup, and dropoff positions per map.
 - - [ ] Visual indicator at pickup and dropoff. Report score and time bonus.
-- - [ ] Make a couple different building patterns, then populate east side.
+- - [x] Make a couple different building patterns, then populate east side.
 - Fri 31 Jan
 - - [x] Menus.
 - - - [x] Hello
