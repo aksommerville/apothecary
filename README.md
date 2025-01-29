@@ -22,7 +22,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Map format and loading.
 - Wed 29 Jan
 - - [x] Physics. Get motion and collisions feeling good.
-- - [ ] Proper graphics for Dot.
+- - [x] Proper graphics for Dot.
 - - [ ] World layout.
 - Thu 30 Jan
 - - [x] Deliveries.
@@ -35,15 +35,23 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - - [x] Game over
 - - [x] Persist high score.
 - - [x] Fade out after game ends, then switch to the game over screen. 3 seconds or so?
+- - [ ] hello: Quit, Play, Settings.
+- - [ ] Settings: Language, Music, Sound, Zap high score, Configure input.
 - - [ ] Text for hello. My name, date, mention Heaven Jam...
+- - [ ] hello: When Dot flies leftward, scale her down a bit, tint a bit to black, and render behind the title.
+- - [ ] gameover: Don't say "new high score" when it's a tie. New message for that.
 - Sat 1 Feb
 - - [x] Music.
+- - [ ] French and Spanish text, why not.
+- - [ ] Thirty Seconds doesn't loop quite right.
+- - [ ] Emotional Support Bird: Add arpeggio peak notes to bass in second pass. (right hand does that on a piano, but with different voices one notices a gap).
 - - [ ] Sound effects.
 - - - [ ] Braking.
 - - - [ ] Flying: Ongoing repeating sound, varies with velocity.
 - - - [ ] Pickup.
 - - - [ ] Dropoff.
 - - [ ] Decorative touches.
+- - - [ ] Little people that go "hey" and jump out of your way.
 - - [ ] physics: I glossed over corner collisions. Does it matter?
 - - [ ] Plan for game to be complete by EOD.
 - Sun 2 Feb

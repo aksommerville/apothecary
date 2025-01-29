@@ -40,6 +40,8 @@ struct game {
   double arrowclock; // Counts down.
   int score; // ie deliveries completed
   double endtime; // Counts down once !running.
+  double dotanimclock;
+  int dotanimframe; // 0..1. Updates constantly, even when not animated.
 };
 
 void physics_update(struct game *game,double elapsed);
