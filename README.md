@@ -39,9 +39,10 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Fade out after game ends, then switch to the game over screen. 3 seconds or so?
 - - [ ] hello: Quit, Play, Settings.
 - - [ ] Settings: Language, Music, Sound, Zap high score, Configure input.
-- - [ ] Text for hello. My name, date, mention Heaven Jam...
-- - [ ] hello: When Dot flies leftward, scale her down a bit, tint a bit to black, and render behind the title.
+- - [x] Text for hello. My name, date, mention Heaven Jam...
+- - [x] hello: When Dot flies leftward, scale her down a bit, tint a bit to black, and render behind the title.
 - - [ ] gameover: Don't say "new high score" when it's a tie. New message for that.
+- - [ ] Physics: Tighten up cornering and braking, and ensure when pressing into a wall, direction still shifts as if you were free -- it doesn't right now, and it's a little weird.
 - Sat 1 Feb
 - - [x] Music.
 - - [ ] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
