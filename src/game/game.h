@@ -35,6 +35,9 @@ extern struct g {
   
   double hiscore; // Seconds. It's stored in milliseconds; we convert at load and save.
   int hiscore_is_new;
+  
+  int enable_music;
+  int enable_sound;
 } g;
 
 // Noop if the existing hiscore is higher.

@@ -3,8 +3,21 @@
 #define HELLO_MESSAGE_TIME 6.0
 #define HELLO_MESSAGE_FADE_TIME 0.5 /* in and out */
 
+#define HELLO_OPTION_WIDTH 80
+#define HELLO_OPTION_HEIGHT 24
+
+#define OPTION_SLIDE_RATE 4.000 /* hz */
+
+// Option ID is chosen to match the string index.
+#define HELLO_OPTION_PLAY 6
+#define HELLO_OPTION_QUIT 7
+#define HELLO_OPTION_LANGUAGE 8
+#define HELLO_OPTION_MUSIC 9
+#define HELLO_OPTION_SOUND 10
+#define HELLO_OPTION_INPUT 11
+
 // Index in strings:1
-static const int messagev[]={10,11,12};
+static const int messagev[]={4,12,13,14};
 
 struct hello {
   int blackout;
@@ -15,15 +28,119 @@ struct hello {
   int msg_texid;
   int msg_texw;
   int msg_texh;
+  struct option {
+    int id;
+    int lbl_texid;
+    int lblw,lblh;
+    int sub_texid;
+    int subw,subh;
+  } *optionv;
+  int optionc,optiona;
+  int optionp;
+  int *langv;
+  int langc,langa;
+  double option_slide;
 };
 
 /* Delete.
  */
  
+static void option_cleanup(struct option *option) {
+  egg_texture_del(option->lbl_texid);
+  egg_texture_del(option->sub_texid);
+}
+ 
 void hello_del(struct hello *hello) {
   if (!hello) return;
   egg_texture_del(hello->msg_texid);
+  if (hello->optionv) {
+    while (hello->optionc-->0) option_cleanup(hello->optionv+hello->optionc);
+    free(hello->optionv);
+  }
+  if (hello->langv) free(hello->langv);
   free(hello);
+}
+
+/* Set option sub.
+ */
+ 
+static int option_set_sub_string(struct option *option,int ix) {
+  egg_texture_del(option->sub_texid);
+  option->sub_texid=font_texres_oneline(g.font,1,ix,HELLO_OPTION_WIDTH,0x80ffffff);
+  egg_texture_get_status(&option->subw,&option->subh,option->sub_texid);
+  return 0;
+}
+
+/* Init options.
+ */
+ 
+static struct option *hello_add_option(struct hello *hello,int id) {
+  if (hello->optionc>=hello->optiona) {
+    int na=hello->optiona+8;
+    if (na>INT_MAX/sizeof(struct option)) return 0;
+    void *nv=realloc(hello->optionv,sizeof(struct option)*na);
+    if (!nv) return 0;
+    hello->optionv=nv;
+    hello->optiona=na;
+  }
+  struct option *option=hello->optionv+hello->optionc++;
+  memset(option,0,sizeof(struct option));
+  option->id=id;
+  option->lbl_texid=font_texres_oneline(g.font,1,id,HELLO_OPTION_WIDTH,0xffffffff);
+  egg_texture_get_status(&option->lblw,&option->lblh,option->lbl_texid);
+  return option;
+}
+ 
+static int hello_init_options(struct hello *hello) {
+  struct option *option;
+  if (!(option=hello_add_option(hello,HELLO_OPTION_PLAY))) return -1;
+  if (!(option=hello_add_option(hello,HELLO_OPTION_LANGUAGE))) return -1;
+  option_set_sub_string(option,1);
+  if (!(option=hello_add_option(hello,HELLO_OPTION_INPUT))) return -1;
+  if (!(option=hello_add_option(hello,HELLO_OPTION_MUSIC))) return -1;
+  option_set_sub_string(option,g.enable_music?15:16);
+  if (!(option=hello_add_option(hello,HELLO_OPTION_SOUND))) return -1;
+  option_set_sub_string(option,g.enable_sound?15:16);
+  if (!(option=hello_add_option(hello,HELLO_OPTION_QUIT))) return -1;
+  return 0;
+}
+
+// Call after changing language.
+static void hello_rebuild_all_labels(struct hello *hello) {
+  struct option *option=hello->optionv;
+  int i=hello->optionc;
+  for (;i-->0;option++) {
+    egg_texture_del(option->lbl_texid);
+    option->lbl_texid=font_texres_oneline(g.font,1,option->id,HELLO_OPTION_WIDTH,0xffffffff);
+    egg_texture_get_status(&option->lblw,&option->lblh,option->lbl_texid);
+    switch (option->id) {
+      case HELLO_OPTION_LANGUAGE: option_set_sub_string(option,1); break;
+      case HELLO_OPTION_MUSIC: option_set_sub_string(option,g.enable_music?15:16); break;
+      case HELLO_OPTION_SOUND: option_set_sub_string(option,g.enable_sound?15:16); break;
+    }
+  }
+  hello->msgclock=0.0;
+}
+
+/* Build list of languages.
+ */
+ 
+static int hello_list_languages(struct hello *hello) {
+  hello->langc=0;
+  int p=0; for (;;p++) {
+    int lang=strings_lang_by_index(p);
+    if (lang<0) break;
+    if (hello->langc>=hello->langa) {
+      int na=hello->langa+8;
+      if (na>INT_MAX/sizeof(int)) return -1;
+      void *nv=realloc(hello->langv,sizeof(int)*na);
+      if (!nv) return -1;
+      hello->langv=nv;
+      hello->langa=na;
+    }
+    hello->langv[hello->langc++]=lang;
+  }
+  return 0;
 }
 
 /* New.
@@ -37,30 +154,144 @@ struct hello *hello_new() {
   hello->msgp=-1; // Start with no message.
   hello->msgclock=3.0;
   
+  if (
+    (hello_list_languages(hello)<0)||
+    (hello_init_options(hello)<0)
+  ) {
+    hello_del(hello);
+    return 0;
+  }
+  
   egg_play_song(RID_song_thirty_seconds,0,1);
   
   return hello;
+}
+
+/* Move cursor.
+ */
+ 
+static void hello_xmotion(struct hello *hello,int d) {
+  hello->optionp+=d;
+  if (hello->optionp<0) hello->optionp=hello->optionc-1;
+  else if (hello->optionp>=hello->optionc) hello->optionp=0;
+  hello->option_slide+=d;
+}
+
+static void hello_ymotion(struct hello *hello,int d) {
+  if ((hello->optionp<0)||(hello->optionp>=hello->optionc)) return;
+  struct option *option=hello->optionv+hello->optionp;
+  switch (option->id) {
+  
+    case HELLO_OPTION_LANGUAGE: {
+        int current=egg_get_language();
+        int langp=-1;
+        int i=0; for (;i<hello->langc;i++) {
+          if (hello->langv[i]==current) {
+            langp=i;
+            break;
+          }
+        }
+        if (langp<0) return;
+        langp+=d;
+        if (langp<0) langp=hello->langc-1;
+        else if (langp>=hello->langc) langp=0;
+        egg_set_language(hello->langv[langp]);
+        strings_check_language();
+        hello_rebuild_all_labels(hello);
+      } break;
+      
+    case HELLO_OPTION_MUSIC: {
+        g.enable_music=g.enable_music?0:1;
+        option_set_sub_string(option,g.enable_music?15:16);
+      } break;
+    case HELLO_OPTION_SOUND: {
+        g.enable_sound=g.enable_sound?0:1;
+        option_set_sub_string(option,g.enable_sound?15:16);
+      } break;
+  }
+}
+
+/* Activate.
+ */
+ 
+static void hello_activate(struct hello *hello) {
+  if ((hello->optionp<0)||(hello->optionp>=hello->optionc)) return;
+  struct option *option=hello->optionv+hello->optionp;
+  switch (option->id) {
+    case HELLO_OPTION_PLAY: hello->dismissed=1; break;
+    case HELLO_OPTION_QUIT: egg_terminate(0); break;
+    case HELLO_OPTION_LANGUAGE: break;
+    case HELLO_OPTION_MUSIC: hello_ymotion(hello,1); break;
+    case HELLO_OPTION_SOUND: hello_ymotion(hello,1); break;
+    case HELLO_OPTION_INPUT: egg_input_configure(); break;
+  }
 }
 
 /* Input.
  */
  
 void hello_input(struct hello *hello,int input,int pvinput) {
+  if ((input&EGG_BTN_LEFT)&&!(pvinput&EGG_BTN_LEFT)) hello_xmotion(hello,-1);
+  if ((input&EGG_BTN_RIGHT)&&!(pvinput&EGG_BTN_RIGHT)) hello_xmotion(hello,1);
+  if ((input&EGG_BTN_UP)&&!(pvinput&EGG_BTN_UP)) hello_ymotion(hello,-1);
+  if ((input&EGG_BTN_DOWN)&&!(pvinput&EGG_BTN_DOWN)) hello_ymotion(hello,1);
   if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
     if (hello->clock<3.0) hello->clock=3.0;
-    else hello->dismissed=1;
+    else hello_activate(hello);
   }
+}
+
+/* Format time: M:SS.mmm
+ * Always returns in 0..dsta.
+ */
+
+static int hello_format_time(char *dst,int dsta,double f) {
+  int ms=(int)(f*1000.0);
+  if (ms<0) ms=0;
+  int s=ms/1000; ms%=1000;
+  int min=s/60; s%=60;
+  if (min>9) { min=9; s=99; ms=999; }
+  if (dsta<8) return 0;
+  dst[0]='0'+min;
+  dst[1]=':';
+  dst[2]='0'+s/10;
+  dst[3]='0'+s%10;
+  dst[4]='.';
+  dst[5]='0'+(ms/100)%10;
+  dst[6]='0'+(ms/10)%10;
+  dst[7]='0'+ms%10;
+  return 8;
 }
 
 /* Trash existing message and render the next one.
  */
  
 static void hello_next_message(struct hello *hello) {
-  hello->msgp++;
-  if ((hello->msgp<0)||(hello->msgp>=sizeof(messagev)/sizeof(messagev[0]))) hello->msgp=0;
   egg_texture_del(hello->msg_texid);
-  hello->msg_texid=font_texres_oneline(g.font,1,messagev[hello->msgp],FBW,0x808080ff);
-  egg_texture_get_status(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
+  for (;;) {
+    hello->msgp++;
+    if ((hello->msgp<0)||(hello->msgp>=sizeof(messagev)/sizeof(messagev[0]))) hello->msgp=0;
+    int ix=messagev[hello->msgp];
+    
+    // Pick off strings with inputs or conditional ones.
+    if (ix==4) { // High score.
+      if (g.hiscore>59.0*9.0) continue; // Unset, don't print it.
+      char tmp[16];
+      int tmpc=hello_format_time(tmp,sizeof(tmp),g.hiscore);
+      char msg[64];
+      struct strings_insertion ins={.mode='s',.s={.v=tmp,.c=tmpc}};
+      int msgc=strings_format(msg,sizeof(msg),1,4,&ins,1);
+      if ((msgc<1)||(msgc>sizeof(msg))) continue;
+      hello->msg_texid=font_tex_oneline(g.font,msg,msgc,FBW,0x808080ff);
+      egg_texture_get_status(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
+      return;
+    }
+    
+    // Everything else is static text.
+    hello->msg_texid=font_texres_oneline(g.font,1,messagev[hello->msgp],FBW,0x808080ff);
+    egg_texture_get_status(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
+    return;
+  }
 }
 
 /* Update.
@@ -73,7 +304,24 @@ int hello_update(struct hello *hello,double elapsed) {
     hello->msgclock+=HELLO_MESSAGE_TIME;
     hello_next_message(hello);
   }
+  if (hello->option_slide<0.0) {
+    if ((hello->option_slide+=elapsed*OPTION_SLIDE_RATE)>=0.0) hello->option_slide=0.0;
+  } else if (hello->option_slide>0.0) {
+    if ((hello->option_slide-=elapsed*OPTION_SLIDE_RATE)<=0.0) hello->option_slide=0.0;
+  }
   return 0;
+}
+
+/* Draw option.
+ */
+ 
+static void hello_draw_option(struct hello *hello,struct option *option,int dstx,int dsty) {
+  if (option->sub_texid) {
+    graf_draw_decal(&g.graf,option->lbl_texid,dstx+(HELLO_OPTION_WIDTH>>1)-(option->lblw>>1),dsty+2,0,0,option->lblw,option->lblh,0);
+    graf_draw_decal(&g.graf,option->sub_texid,dstx+(HELLO_OPTION_WIDTH>>1)-(option->subw>>1),dsty+HELLO_OPTION_HEIGHT-option->subh-2,0,0,option->subw,option->subh,0);
+  } else {
+    graf_draw_decal(&g.graf,option->lbl_texid,dstx+(HELLO_OPTION_WIDTH>>1)-(option->lblw>>1),dsty+(HELLO_OPTION_HEIGHT>>1)-(option->lblh>>1),0,0,option->lblw,option->lblh,0);
+  }
 }
 
 /* Render.
@@ -139,5 +387,26 @@ void hello_render(struct hello *hello) {
   
   /* Options and cursor.
    */
-  //TODO
+  if ((hello->optionc>0)&&(hello->clock>=3.0)) {
+    int dstx0=(FBW>>1)-(HELLO_OPTION_WIDTH>>1);
+    int dsty=110;
+    int i=hello->optionp;
+    graf_draw_rect(&g.graf,dstx0,dsty,HELLO_OPTION_WIDTH,HELLO_OPTION_HEIGHT,0xc0a00060);
+    dstx0+=hello->option_slide*HELLO_OPTION_WIDTH;
+    int dstx=dstx0;
+    while (dstx>-HELLO_OPTION_WIDTH) {
+      if (i<0) i+=hello->optionc;
+      hello_draw_option(hello,hello->optionv+i,dstx,dsty);
+      dstx-=HELLO_OPTION_WIDTH;
+      i--;
+    }
+    dstx=dstx0+HELLO_OPTION_WIDTH;
+    i=hello->optionp+1;
+    while (dstx<FBW) {
+      if (i>=hello->optionc) i=0;
+      hello_draw_option(hello,hello->optionv+i,dstx,dsty);
+      dstx+=HELLO_OPTION_WIDTH;
+      i++;
+    }
+  }
 }

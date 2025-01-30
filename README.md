@@ -44,12 +44,13 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - - [x] Game over
 - - [x] Persist high score.
 - - [x] Fade out after game ends, then switch to the game over screen. 3 seconds or so?
-- - [ ] hello: Quit, Play, Settings.
-- - [ ] Settings: Language, Music, Sound, Zap high score, Configure input.
+- - [x] hello: Quit, Play, Settings.
+- - [x] Settings: Language, Music, Sound, Zap high score, Configure input.
 - - [x] Text for hello. My name, date, mention Heaven Jam...
 - - [x] hello: When Dot flies leftward, scale her down a bit, tint a bit to black, and render behind the title.
 - - [x] gameover: Don't say "new high score" when it's a tie. New message for that.
 - - [x] Physics: Tighten up cornering and braking, and ensure when pressing into a wall, direction still shifts as if you were free -- it doesn't right now, and it's a little weird.
+- - [ ] Turn off music and sound. UI is present and sets a flag, but doesn't actually do anything.
 - - [ ] Tune map so there are neat tricks you can pull, like there's always a wall to bounce off where you need one.
 - Sat 1 Feb
 - - [x] Music.
@@ -82,7 +83,7 @@ Stretch goals.
 
 Mon 27 Jan: Flying, map loading, music. Rather more than I expected to get done day one!
 Tue 28 Jan: Random pickup and deliver. Clock, score. Preliminary hello and gameover splashes.
-Wed 29 Jan: Prettier graphics for Dot. Real map.
+Wed 29 Jan: Prettier graphics for Dot. Real map. Changed to time-based scoring with fixed deliveries.
 Thu 30 Jan: 
 Fri 31 Jan: 
 Sat 1 Feb: 

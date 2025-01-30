@@ -13,6 +13,9 @@ int egg_client_init() {
     return -2;
   }
   
+  g.enable_music=1;
+  g.enable_sound=1;
+  
   if ((g.romc=egg_get_rom(0,0))<=0) return -1;
   if (!(g.rom=malloc(g.romc))) return -1;
   if (egg_get_rom(g.rom,g.romc)!=g.romc) return -1;

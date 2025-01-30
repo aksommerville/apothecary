@@ -48,8 +48,7 @@ static int game_rebuild_dropoffv(struct game *game) {
   const struct dropoff *src=game->map->dropoffv;
   int i=game->map->dropoffc;
   for (;i-->0;src++) {
-    int p=0;
-    if (game->dropoffc>0) p=rand()%game->dropoffc;
+    int p=rand()%(game->dropoffc+1);
     memmove(game->dropoffv+p+1,game->dropoffv+p,sizeof(struct dropoff)*(game->dropoffc-p));
     memcpy(game->dropoffv+p,src,sizeof(struct dropoff));
     game->dropoffc++;
