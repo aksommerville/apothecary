@@ -56,7 +56,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Option to abort game, press Start.
 - Sat 1 Feb
 - - [x] Music.
-- - [ ] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
+- - [x] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
 - - [x] Thirty Seconds doesn't loop quite right.
 - - [x] Emotional Support Bird: Add arpeggio peak notes to bass in second pass. (right hand does that on a piano, but with different voices one notices a gap).
 - - [x] Sound effects.
