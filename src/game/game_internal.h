@@ -18,6 +18,7 @@
 #define GAME_END_TIME 3.0
 #define GAME_END_FADE_TIME 1.0
 #define GIVE_UP_TIME (60.0*9.0) /* Don't let the clock get near the second minute digit. */
+#define BYSTANDER_RADIUS 50.0
 
 struct racer {
   double x,y; // world pixels
@@ -29,6 +30,13 @@ struct target {
   double x,y; // world pixels
   int type; // NS_target_*; zero for none
   uint8_t tileid;
+};
+
+struct bystander {
+  double x,y;
+  uint8_t tileid; // base tileid. +16 if reacting.
+  double react; // counts down while reacting.
+  double dx,dy;
 };
 
 struct game {
@@ -52,8 +60,15 @@ struct game {
   int pause_selp; // (0,1,2)=(not paused,resume,main menu)
   int texid_resume,w_resume,h_resume; // Pause menu labels. Language can't change during play, so we only need them once.
   int texid_menu,w_menu,h_menu;
+  struct bystander *bystanderv;
+  int bystanderc,bystandera;
 };
 
 void physics_update(struct game *game,double elapsed);
+
+/* Simpler generic collision detection for one sprite.
+ * (x,y) are in and out. Returns nonzero if modified.
+ */
+int physics_update_1(struct game *game,double *x,double *y,double radius);
 
 #endif

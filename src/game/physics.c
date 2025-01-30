@@ -72,3 +72,52 @@ void physics_update(struct game *game,double elapsed) {
     }
   }
 }
+
+/* Generic update, rectification only.
+ */
+ 
+int physics_update_1(struct game *game,double *x,double *y,double radius) {
+
+  double x0=*x,y0=*y;
+  double l=x0-radius;
+  double r=x0+radius;
+  double t=y0-radius;
+  double b=y0+radius;
+  int result=0;
+  
+  const struct sbox *sbox=game->map->sboxv;
+  int sboxi=game->map->sboxc;
+  for (;sboxi-->0;sbox++) {
+    if (sbox->x>=r) continue;
+    if (sbox->y>=b) continue;
+    if (sbox->x+sbox->w<=l) continue;
+    if (sbox->y+sbox->h<=t) continue;
+    
+    // Select direction of escape, for cardinal cases.
+    double escx=0.0,escy=0.0;
+    if ((*x>=sbox->x)&&(*x<sbox->x+sbox->w)) {
+      if (*y<sbox->y+sbox->h*0.5) {
+        escy=-1.0;
+      } else {
+        escy=1.0;
+      }
+    } else if ((*y>=sbox->y)&&(*y<sbox->y+sbox->h)) {
+      if (*x<sbox->x+sbox->w*0.5) {
+        escx=-1.0;
+      } else {
+        escx=1.0;
+      }
+    } else {
+      //TODO Check for corners. And it's possible there's actually no collision.
+      continue;
+    }
+    
+    // Clamp to the box edge per escapement.
+         if (escy<0.0) *y=sbox->y-radius;
+    else if (escy>0.0) *y=sbox->y+sbox->h+radius;
+    else if (escx<0.0) *x=sbox->x-radius;
+    else if (escx>0.0) *x=sbox->x+sbox->w+radius;
+    result=1;
+  }
+  return result;
+}

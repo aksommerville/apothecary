@@ -173,7 +173,17 @@ void game_render(struct game *game) {
     graf_draw_tile(&g.graf,g.texid_tiles,targetx,targety,game->target.tileid,0);
   }
   
-  //TODO Decorative sprites.
+  /* Bystanders.
+   */
+  {
+    struct bystander *bystander=game->bystanderv;
+    int i=game->bystanderc;
+    for (;i-->0;bystander++) {
+      int16_t dstx=(int)bystander->x-camerax;
+      int16_t dsty=(int)bystander->y-cameray;
+      graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,bystander->tileid+((bystander->react>0.0)?0x10:0),0);
+    }
+  }
   
   /* Hero.
    */

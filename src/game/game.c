@@ -5,6 +5,8 @@
  
 void game_del(struct game *game) {
   if (!game) return;
+  if (game->dropoffv) free(game->dropoffv);
+  if (game->bystanderv) free(game->bystanderv);
   egg_texture_del(game->texid_resume);
   egg_texture_del(game->texid_menu);
   free(game);
@@ -59,6 +61,51 @@ static int game_rebuild_dropoffv(struct game *game) {
   return 0;
 }
 
+/* Rebuild list of bystanders.
+ */
+ 
+static void game_init_bystander(struct game *game,struct bystander *bystander) {
+  int panic=100;
+  for (;;) {
+    if (--panic<0) { // Haven't found a spot yet? Put him way offscreen and forget him.
+      bystander->x=-999.0;
+      bystander->y=-999.0;
+      return;
+    }
+    int col=rand()%game->map->w;
+    int row=rand()%game->map->h;
+    uint8_t physics=game->map->physics[game->map->v[row*game->map->w+col]];
+    if (physics==NS_physics_vacant) { // seems like a reasonable place to park...
+      bystander->x=(col+0.5)*NS_sys_tilesize;
+      bystander->y=(row+0.5)*NS_sys_tilesize;
+      bystander->react=0.0;
+      switch (rand()%4) {
+        case 0: bystander->tileid=0x0f; break;
+        case 1: bystander->tileid=0x2f; break;
+        case 2: bystander->tileid=0x4f; break;
+        case 3: bystander->tileid=0x6f; break;
+      }
+      return;
+    }
+  }
+}
+ 
+static int game_rebuild_bystanderv(struct game *game) {
+  const int count=100;
+  game->bystanderc=0;
+  if (game->bystandera<count) {
+    void *nv=realloc(game->bystanderv,sizeof(struct bystander)*count);
+    if (!nv) return -1;
+    game->bystanderv=nv;
+    game->bystandera=count;
+  }
+  while (game->bystanderc<game->bystandera) {
+    struct bystander *bystander=game->bystanderv+game->bystanderc++;
+    game_init_bystander(game,bystander);
+  }
+  return 0;
+}
+
 /* New.
  */
  
@@ -69,7 +116,8 @@ struct game *game_new() {
   if (
     !(game->map=map_get(RID_map_scratch))||
     (game_process_map_commands(game)<0)||
-    (game_rebuild_dropoffv(game)<0)
+    (game_rebuild_dropoffv(game)<0)||
+    (game_rebuild_bystanderv(game)<0)
   ) {
     game_del(game);
     return 0;
@@ -139,7 +187,7 @@ static void target_reached(struct game *game) {
     } else {
       game->dropoff=game->dropoffv+game->dropoffc-1;
       game->target.type=NS_target_pickup;
-      game->target.tileid=0x12; // TODO variety?
+      game->target.tileid=0x12;
       game->target.x=(game->map->pickupx+0.5)*NS_sys_tilesize;
       game->target.y=(game->map->pickupy+0.5)*NS_sys_tilesize;
     }
@@ -271,6 +319,57 @@ int game_update(struct game *game,double elapsed) {
      * (in truth, it only corrects hero against static geometry, it's very simple).
      */
     physics_update(game,elapsed);
+    
+    /* Update bystanders.
+     */
+    double dotvel2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
+    struct bystander *bystander=game->bystanderv;
+    int i=game->bystanderc;
+    for (;i-->0;bystander++) {
+      if (bystander->react>0.0) {
+        bystander->react-=elapsed;
+        bystander->x+=bystander->dx*elapsed;
+        bystander->y+=bystander->dy*elapsed;
+        physics_update_1(game,&bystander->x,&bystander->y,7.0);
+        if (bystander->react<=0.0) { // Check for water.
+          int col=(int)bystander->x/NS_sys_tilesize;
+          int row=(int)bystander->y/NS_sys_tilesize;
+          if ((col>=0)&&(row>=0)&&(col<game->map->w)&&(row<game->map->h)) {
+            uint8_t physics=game->map->physics[game->map->v[row*game->map->w+col]];
+            if (physics==NS_physics_water) {
+              //TODO splash sound and visual effect?
+              bystander->x=-999.0;
+              bystander->y=-999.0;
+            }
+          }
+        }
+      } else if (bystander->react>-0.500) {
+        // A little extra delay before we react again.
+        bystander->react-=elapsed;
+      } else if (dotvel2<10000.0) {
+        // Don't react at low velocities.
+      } else {
+        double dx=bystander->x-game->racer.x;
+        if ((dx<-BYSTANDER_RADIUS)||(dx>BYSTANDER_RADIUS)) continue;
+        double dy=bystander->y-game->racer.y;
+        if ((dy<-BYSTANDER_RADIUS)||(dy>BYSTANDER_RADIUS)) continue;
+        double d=sqrt(dx*dx+dy*dy);
+        if (d>BYSTANDER_RADIUS) continue;
+        play_sound(RID_sound_whoa);
+        bystander->react=0.300;
+        // Reaction direction is perpendicular to dot's motion, whichever way is further.
+        double dotvel=sqrt(dotvel2);
+        double dotnormx=game->racer.vx/dotvel;
+        double dotnormy=game->racer.vy/dotvel;
+        double pdx=-dotnormy;
+        double pdy=dotnormx;
+        double rej=dx*dotnormy-dy*dotnormx;
+        if (rej>0.0) { pdx*=-1.0; pdy*=-1.0; }
+        const double speed=100.0;
+        bystander->dx=pdx*speed;
+        bystander->dy=pdy*speed;
+      }
+    }
   
     /* Check whether we hit the target.
      */
