@@ -148,3 +148,13 @@ void set_hiscore(double s) {
   };
   egg_store_set("hiscore",7,tmp,sizeof(tmp));
 }
+
+void play_song(int rid) {
+  g.songid=rid;
+  egg_play_song(g.enable_music?rid:0,0,1);
+}
+
+void play_sound(int rid) {
+  if (!g.enable_sound) return;
+  egg_play_sound(rid);
+}

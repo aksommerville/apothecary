@@ -75,7 +75,7 @@ struct game *game_new() {
   
   game->running=1;
   
-  egg_play_song(RID_song_race_to_the_bottom,0,1);
+  play_song(RID_song_race_to_the_bottom);
   
   return game;
 }
@@ -107,7 +107,7 @@ static void target_reached(struct game *game) {
       game->running=0;
       game->endtime=GAME_END_TIME;
       set_hiscore(game->clock);
-      egg_play_song(RID_song_emotional_support_bird,0,1);
+      play_song(RID_song_emotional_support_bird);
     } else {
       game->dropoff=game->dropoffv+game->dropoffc-1;
       game->target.type=NS_target_pickup;
@@ -138,7 +138,7 @@ int game_update(struct game *game,double elapsed) {
     if (game->clock>GIVE_UP_TIME) {
       game->running=0;
       game->endtime=GAME_END_TIME;
-      egg_play_song(RID_song_emotional_support_bird,0,1);
+      play_song(RID_song_emotional_support_bird);
     }
   }
   if ((game->arrowclock-=elapsed)<=0.0) {

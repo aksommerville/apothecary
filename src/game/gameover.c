@@ -111,7 +111,7 @@ struct gameover *gameover_new() {
   
   // Ensure the ending song is playing.
   // But it should be redundant: game starts the ending music before it finishes.
-  egg_play_song(RID_song_emotional_support_bird,0,1);
+  play_song(RID_song_emotional_support_bird);
   
   if (gameover_render_message(go)<0) {
     gameover_del(go);

@@ -50,8 +50,8 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] hello: When Dot flies leftward, scale her down a bit, tint a bit to black, and render behind the title.
 - - [x] gameover: Don't say "new high score" when it's a tie. New message for that.
 - - [x] Physics: Tighten up cornering and braking, and ensure when pressing into a wall, direction still shifts as if you were free -- it doesn't right now, and it's a little weird.
-- - [ ] Turn off music and sound. UI is present and sets a flag, but doesn't actually do anything.
-- - [ ] Tune map so there are neat tricks you can pull, like there's always a wall to bounce off where you need one.
+- - [x] Turn off music and sound. UI is present and sets a flag, but doesn't actually do anything.
+- - [x] Tune map so there are neat tricks you can pull, like there's always a wall to bounce off where you need one.
 - Sat 1 Feb
 - - [x] Music.
 - - [ ] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)

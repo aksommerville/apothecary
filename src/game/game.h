@@ -38,10 +38,17 @@ extern struct g {
   
   int enable_music;
   int enable_sound;
+  int songid;
 } g;
 
 // Noop if the existing hiscore is higher.
 void set_hiscore(double s);
+
+/* Use these instead of egg_play_song/egg_play_sound; they're savvy to the enable flags.
+ * play_song(g.songid) if you change enable_music.
+ */
+void play_song(int rid);
+void play_sound(int rid);
 
 /* "game" instance is one session of play.
  * If there's more than one level, they'll be separate instances.

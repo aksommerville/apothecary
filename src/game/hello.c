@@ -162,7 +162,7 @@ struct hello *hello_new() {
     return 0;
   }
   
-  egg_play_song(RID_song_thirty_seconds,0,1);
+  play_song(RID_song_thirty_seconds);
   
   return hello;
 }
@@ -203,6 +203,7 @@ static void hello_ymotion(struct hello *hello,int d) {
     case HELLO_OPTION_MUSIC: {
         g.enable_music=g.enable_music?0:1;
         option_set_sub_string(option,g.enable_music?15:16);
+        play_song(g.songid);
       } break;
     case HELLO_OPTION_SOUND: {
         g.enable_sound=g.enable_sound?0:1;
@@ -220,7 +221,7 @@ static void hello_activate(struct hello *hello) {
   switch (option->id) {
     case HELLO_OPTION_PLAY: hello->dismissed=1; break;
     case HELLO_OPTION_QUIT: egg_terminate(0); break;
-    case HELLO_OPTION_LANGUAGE: break;
+    case HELLO_OPTION_LANGUAGE: hello_ymotion(hello,1); break;
     case HELLO_OPTION_MUSIC: hello_ymotion(hello,1); break;
     case HELLO_OPTION_SOUND: hello_ymotion(hello,1); break;
     case HELLO_OPTION_INPUT: egg_input_configure(); break;
