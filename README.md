@@ -66,8 +66,9 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - - [x] Pickup.
 - - - [x] Dropoff.
 - - [x] 7 distinct customers
-- - [ ] Decorative touches.
+- - [x] Decorative touches.
 - - - [x] Little people that go "hey" and jump out of your way.
+- - - [x] Add graphics until we run out of tilesheet.
 - - [x] physics: I glossed over corner collisions. Does it matter? ...been playing it for two days, and no, i don't notice anything wrong.
 - - [ ] Egg's subtractive voices are markedly different native vs web. I like what we have for native. Look into repairing egg.
 - - [ ] Plan for game to be complete by EOD.
