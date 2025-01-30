@@ -55,6 +55,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Show progress 0..6
 - - [x] Option to abort game, press Start.
 - Sat 1 Feb
+- - [ ] I checked with admins and it's kosher: Submit early to the jam. Maybe get some feedback while we're still allowed to update.
 - - [x] Music.
 - - [x] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
 - - [x] Thirty Seconds doesn't loop quite right.
@@ -64,7 +65,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - - [x] Flying: Ongoing repeating sound, varies with velocity.
 - - - [x] Pickup.
 - - - [x] Dropoff.
-- - [ ] 7 distinct customers
+- - [x] 7 distinct customers
 - - [ ] Decorative touches.
 - - - [ ] Little people that go "hey" and jump out of your way.
 - - [x] physics: I glossed over corner collisions. Does it matter? ...been playing it for two days, and no, i don't notice anything wrong.
