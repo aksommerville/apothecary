@@ -38,6 +38,26 @@ static int game_process_map_commands(struct game *game) {
   return 0;
 }
 
+/* Rebuild dropoffv from the map.
+ */
+ 
+static int game_rebuild_dropoffv(struct game *game) {
+  if (game->map->dropoffc<1) return -1;
+  if (!(game->dropoffv=malloc(sizeof(struct dropoff)*game->map->dropoffc))) return -1;
+  game->dropoffc=0;
+  const struct dropoff *src=game->map->dropoffv;
+  int i=game->map->dropoffc;
+  for (;i-->0;src++) {
+    int p=0;
+    if (game->dropoffc>0) p=rand()%game->dropoffc;
+    memmove(game->dropoffv+p+1,game->dropoffv+p,sizeof(struct dropoff)*(game->dropoffc-p));
+    memcpy(game->dropoffv+p,src,sizeof(struct dropoff));
+    game->dropoffc++;
+  }
+  game->dropoff=game->dropoffv+game->dropoffc-1;
+  return 0;
+}
+
 /* New.
  */
  
@@ -45,16 +65,11 @@ struct game *game_new() {
   struct game *game=calloc(1,sizeof(struct game));
   if (!game) return 0;
   
-  game->clock=30.0;
-  game->time_bonus=20;
-  game->score=0;
-  
-  if (!(game->map=map_get(RID_map_scratch))) {
-    game_del(game);
-    return 0;
-  }
-  
-  if (game_process_map_commands(game)<0) {
+  if (
+    !(game->map=map_get(RID_map_scratch))||
+    (game_process_map_commands(game)<0)||
+    (game_rebuild_dropoffv(game)<0)
+  ) {
     game_del(game);
     return 0;
   }
@@ -78,68 +93,37 @@ void game_input(struct game *game,int input,int pvinput) {
   game->brake=input&EGG_BTN_WEST;
 }
 
-/* Start a new bonus toast.
- */
- 
-static void game_set_bonus_toast(struct game *game,int v,double x,double y) {
-  game->bonus_toast.v=v;
-  game->bonus_toast.x=x;
-  game->bonus_toast.y=y-NS_sys_tilesize;
-  game->bonus_toast.ttl=BONUS_TOAST_TTL;
-}
-
 /* Reached the target.
  */
  
 static void target_reached(struct game *game) {
-
-  /* Award time bonus and score.
-   */
-  if (game->time_bonus>0) {
-    game_set_bonus_toast(game,game->time_bonus,game->target.x,game->target.y);
-    game->clock+=game->time_bonus;
-    game->time_bonus--;
-  }
-  if (game->target.type==NS_target_dropoff) {
-    game->score++;
-  }
   
-  /* If we were dropping off, start picking up.
-   * Easy: Pickup is always at the apothecary.
+  /* If we were dropping off, move to the next dropoff or win.
+   * If there's another one, set target to the apothecary.
    */
   if (game->target.type==NS_target_dropoff) {
-    game->target.type=NS_target_pickup;
-    game->target.tileid=0x12; // TODO variety?
-    game->target.x=(game->map->pickupx+0.5)*NS_sys_tilesize;
-    game->target.y=(game->map->pickupy+0.5)*NS_sys_tilesize;
+    game->dropoffc--;
+    if (game->dropoffc<=0) {
+      game->target.type=0;
+      game->running=0;
+      game->endtime=GAME_END_TIME;
+      set_hiscore(game->clock);
+      egg_play_song(RID_song_emotional_support_bird,0,1);
+    } else {
+      game->dropoff=game->dropoffv+game->dropoffc-1;
+      game->target.type=NS_target_pickup;
+      game->target.tileid=0x12; // TODO variety?
+      game->target.x=(game->map->pickupx+0.5)*NS_sys_tilesize;
+      game->target.y=(game->map->pickupy+0.5)*NS_sys_tilesize;
+    }
   
-  /* If we were picking up, choose an appropriate dropoff.
+  /* If we were picking up, set target to the current dropoff.
    */
   } else {
-    int candidatec=0,i;
-    const struct dropoff *dropoff=game->map->dropoffv;
-    for (i=game->map->dropoffc;i-->0;dropoff++) {
-      if (dropoff->difficulty>game->score) continue;
-      candidatec++;
-    }
-    dropoff=game->map->dropoffv;
-    if (!candidatec) {
-      fprintf(stderr,"map:%d does not contain any zero-difficulty dropoff\n",game->map->id);
-    } else {
-      int choice=rand()%candidatec;
-      const struct dropoff *q=game->map->dropoffv;
-      for (i=game->map->dropoffc;i-->0;q++) {
-        if (q->difficulty>game->score) continue;
-        if (!choice--) {
-          dropoff=q;
-          break;
-        }
-      }
-    }
     game->target.type=NS_target_dropoff;
-    game->target.tileid=dropoff->tileid;
-    game->target.x=(dropoff->x+0.5)*NS_sys_tilesize;
-    game->target.y=(dropoff->y+0.5)*NS_sys_tilesize;
+    game->target.tileid=game->dropoff->tileid;
+    game->target.x=(game->dropoff->x+0.5)*NS_sys_tilesize;
+    game->target.y=(game->dropoff->y+0.5)*NS_sys_tilesize;
   }
 }
 
@@ -151,11 +135,10 @@ int game_update(struct game *game,double elapsed) {
   /* Advance clocks.
    */
   if (game->running) {
-    if ((game->clock-=elapsed)<=0.0) {
-      game->clock=0.0;
+    game->clock+=elapsed;
+    if (game->clock>GIVE_UP_TIME) {
       game->running=0;
       game->endtime=GAME_END_TIME;
-      set_hiscore(game->score);
       egg_play_song(RID_song_emotional_support_bird,0,1);
     }
   }
@@ -171,7 +154,6 @@ int game_update(struct game *game,double elapsed) {
     game->dotanimclock+=0.125;
     if (++(game->dotanimframe)>=2) game->dotanimframe=0;
   }
-  if (game->bonus_toast.ttl>0.0) game->bonus_toast.ttl-=elapsed;
 
   /* Poll input. Update hero's angle and velocity.
    */

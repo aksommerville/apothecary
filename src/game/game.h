@@ -33,12 +33,12 @@ extern struct g {
   int texid_tiles;
   int texid_gross;
   
-  int hiscore;
+  double hiscore; // Seconds. It's stored in milliseconds; we convert at load and save.
   int hiscore_is_new;
 } g;
 
 // Noop if the existing hiscore is higher.
-void set_hiscore(int score);
+void set_hiscore(double s);
 
 /* "game" instance is one session of play.
  * If there's more than one level, they'll be separate instances.

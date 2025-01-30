@@ -31,10 +31,13 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Start, pickup, and dropoff positions per map.
 - - [x] Visual indicator at pickup and dropoff. Report score and time bonus.
 - - [x] Make a couple different building patterns, then populate east side.
-- - [ ] !!!!!! I think we've got scoring backward.
+- - [x] !!!!!! I think we've got scoring backward.
 - - - Instead of testing how many deliveries you can make in a fixed time, we should test how much time you take to make a fixed set of deliveries.
 - - - Ten deliveries, say? And the order will be random each time. So scores are comparable but you can't do it blindfolded.
 - - - What's nice about that is it's not quantized like delivery counts. You score like 2:04.123, and in the future you could edge that out by a fraction of a second.
+- - - ...yes a fixed set of deliveries, scored by time, plays much nicer.
+- - - With 10 dropoffs, I'm scoring around 2:40.
+- - - Reduced to 7 and now 2:00 is doable but difficult.
 - Fri 31 Jan
 - - [x] Menus.
 - - - [x] Hello
@@ -47,11 +50,12 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] hello: When Dot flies leftward, scale her down a bit, tint a bit to black, and render behind the title.
 - - [x] gameover: Don't say "new high score" when it's a tie. New message for that.
 - - [x] Physics: Tighten up cornering and braking, and ensure when pressing into a wall, direction still shifts as if you were free -- it doesn't right now, and it's a little weird.
+- - [ ] Tune map so there are neat tricks you can pull, like there's always a wall to bounce off where you need one.
 - Sat 1 Feb
 - - [x] Music.
 - - [ ] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
-- - [ ] Thirty Seconds doesn't loop quite right.
-- - [ ] Emotional Support Bird: Add arpeggio peak notes to bass in second pass. (right hand does that on a piano, but with different voices one notices a gap).
+- - [x] Thirty Seconds doesn't loop quite right.
+- - [x] Emotional Support Bird: Add arpeggio peak notes to bass in second pass. (right hand does that on a piano, but with different voices one notices a gap).
 - - [ ] Sound effects.
 - - - [ ] Braking.
 - - - [ ] Flying: Ongoing repeating sound, varies with velocity.
@@ -69,6 +73,7 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 
 Stretch goals.
 - [ ] Multiplayer.
+- - Shared screen doesn't seem workable, and I don't have much appetite for implementing split screen.
 - [ ] Different play modes... Open exploration? Race in a loop?
 - [ ] Multiple deliveries at once.
 - [ ] Hazards.

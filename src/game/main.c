@@ -40,10 +40,20 @@ int egg_client_init() {
   }
   if (restype_ready()<0) return -1;
   
-  char tmp[2];
-  int tmpc=egg_store_get(tmp,2,"hiscore",7);
-  if ((tmpc==2)&&(tmp[0]>='0')&&(tmp[0]<='9')&&(tmp[1]>='0')&&(tmp[1]<='9')) {
-    g.hiscore=(tmp[0]-'0')*10+(tmp[1]-'0');
+  g.hiscore=60.0*9.0;
+  char tmp[16];
+  int tmpc=egg_store_get(tmp,sizeof(tmp),"hiscore",7);
+  if ((tmpc>0)&&(tmpc<=sizeof(tmp))) {
+    g.hiscore=0.0;
+    int i=0; for (;i<tmpc;i++) {
+      if ((tmp[i]<'0')||(tmp[i]>'9')) {
+        g.hiscore=60.0*9.0*1000.0;
+        break;
+      }
+      g.hiscore*=10.0;
+      g.hiscore+=tmp[i]-'0';
+    }
+    g.hiscore/=1000.0;
   }
   
   srand_auto();
@@ -118,12 +128,20 @@ void egg_client_render() {
   graf_flush(&g.graf);
 }
 
-void set_hiscore(int score) {
+void set_hiscore(double s) {
   g.hiscore_is_new=0;
-  if (score>99) score=99;
-  if (score<=g.hiscore) return;
+  if (s>60.0*9.0) s=60.0*9.0;
+  if (s>=g.hiscore) return;
   g.hiscore_is_new=1;
-  g.hiscore=score;
-  char tmp[2]={'0'+score/10,'0'+score%10};
-  egg_store_set("hiscore",7,tmp,2);
+  g.hiscore=s;
+  int ms=(int)(s*1000);
+  char tmp[6]={ // Can't exceed 540000, ie 6 digits. Pad with zeroes for simplicity's sake.
+    '0'+(ms/100000)%10,
+    '0'+(ms/10000 )%10,
+    '0'+(ms/1000  )%10,
+    '0'+(ms/100   )%10,
+    '0'+(ms/10    )%10,
+    '0'+ms         %10,
+  };
+  egg_store_set("hiscore",7,tmp,sizeof(tmp));
 }

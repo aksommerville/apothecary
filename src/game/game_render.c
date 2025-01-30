@@ -185,25 +185,9 @@ void game_render(struct game *game) {
     game_draw_arrow(game,camerax,cameray,targetx,targety);
   }
   
-  /* Bonus toast if present.
-   */
-  if (game->bonus_toast.ttl>0.0) {
-    int dstx=(int)game->bonus_toast.x-camerax-7;
-    int dsty=(int)game->bonus_toast.y-cameray;
-    dsty-=(int)(((BONUS_TOAST_TTL-game->bonus_toast.ttl)*NS_sys_tilesize)/BONUS_TOAST_TTL);
-    int alpha=(game->bonus_toast.ttl*255.0)/BONUS_TOAST_TTL;
-    if (alpha<0xff) graf_set_alpha(&g.graf,alpha);
-    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,0x3b,0); dstx+=7; // '+', not ascii
-    if (game->bonus_toast.v>=10) {
-      graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+(game->bonus_toast.v/10)%10,0); dstx+=7;
-    }
-    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+game->bonus_toast.v%10,0);
-    graf_set_alpha(&g.graf,0xff);
-  }
-  
   /* Show clock in the top right.
    */
-  if (game->running) {
+  {
     int ms=(int)(game->clock*1000.0);
     int s=ms/1000; ms%=1000;
     int min=s/60; s%=60;
@@ -215,19 +199,7 @@ void game_render(struct game *game) {
     graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+s%10,0);
   }
   
-  //TODO Bigger countdown mid-screen, below 10 s.
-  
-  /* Show score in the top left.
-   * Rules aren't settled yet, and maps are very temporary, but in early playthrus, I'm getting scores of 10..20.
-   * I think we can set a ceiling of 99.
-   */
-  {
-    int16_t dstx=8,dsty=8,xstride=7;
-    int rscr=game->score;
-    if (rscr>99) rscr=99; else if (rscr<0) rscr=0;
-    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+rscr/10,0); dstx+=xstride;
-    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+rscr%10,0);
-  }
+  //TODO Show dropoffs completed and total.
   
   /* If we're ended, fade to black.
    */

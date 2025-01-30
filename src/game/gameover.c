@@ -19,12 +19,35 @@ void gameover_del(struct gameover *go) {
   free(go);
 }
 
+/* Format time: M:SS.mmm
+ * Always returns in 0..dsta.
+ */
+
+static int gameover_format_time(char *dst,int dsta,double f) {
+  int ms=(int)(f*1000.0);
+  if (ms<0) ms=0;
+  int s=ms/1000; ms%=1000;
+  int min=s/60; s%=60;
+  if (min>9) { min=9; s=99; ms=999; }
+  if (dsta<8) return 0;
+  dst[0]='0'+min;
+  dst[1]=':';
+  dst[2]='0'+s/10;
+  dst[3]='0'+s%10;
+  dst[4]='.';
+  dst[5]='0'+(ms/100)%10;
+  dst[6]='0'+(ms/10)%10;
+  dst[7]='0'+ms%10;
+  return 8;
+}
+
 /* Render the big message.
  */
  
 static int gameover_render_message(struct gameover *go) {
   if ((go->texid=egg_texture_new())<1) return -1;
-  int score=g.game?g.game->score:0;
+  int score=0;
+  //TODO Update for new scoring regime.
   
   /* Allocate a scratch buffer the size of the framebuffer.
    * We'll implicitly crop it when uploading to the texture.
@@ -32,14 +55,26 @@ static int gameover_render_message(struct gameover *go) {
   uint32_t *rgba=calloc(FBW<<2,FBH);
   if (!rgba) return -1;
   
-  int dsty=0,w=0,w1,textc,srcc;
+  int dsty=0,w=0,w1,textc,srcc,tmpc;
   int lineh=font_get_line_height(g.font);
-  char text[256];
+  char text[256],tmp[32];
   const char *src;
   
-  // "You completed %0 deliveries."
-  if (score>0) {
-    struct strings_insertion ins={'i',.i=score};
+  // "Your score: M:SS.mmm"
+  {
+    tmpc=gameover_format_time(tmp,sizeof(tmp),g.game->clock);
+    struct strings_insertion ins={'s',.s={.v=tmp,.c=tmpc}};
+    textc=strings_format(text,sizeof(text),1,3,&ins,1);
+    if ((textc<0)||(textc>sizeof(text))) textc=0;
+    w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,text,textc,0xffffffff);
+    if (w1>w) w=w1;
+    dsty+=lineh;
+  }
+  
+  // "High score: M:SS.mmm"
+  {
+    tmpc=gameover_format_time(tmp,sizeof(tmp),g.hiscore);
+    struct strings_insertion ins={'s',.s={.v=tmp,.c=tmpc}};
     textc=strings_format(text,sizeof(text),1,4,&ins,1);
     if ((textc<0)||(textc>sizeof(text))) textc=0;
     w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,text,textc,0xffffffff);
@@ -47,31 +82,10 @@ static int gameover_render_message(struct gameover *go) {
     dsty+=lineh;
   }
   
-  // Score judgment.
-       if (score<=0) srcc=strings_get(&src,1,3); // Special message at zero.
-  else if (score<5) srcc=strings_get(&src,1,5); // "Not good"
-  else if (score<10) srcc=strings_get(&src,1,6); // "Not bad"
-  else srcc=strings_get(&src,1,7); // "Fantastic!"
-  w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,src,srcc,0xffffffff);
-  if (w1>w) w=w1;
-  dsty+=lineh;
-  
-  // "New high score" or report the existing one.
+  // "New high score!"
   if (g.hiscore_is_new) {
-    srcc=strings_get(&src,1,8);
+    srcc=strings_get(&src,1,5);
     w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,src,srcc,0xffffffff);
-    if (w1>w) w=w1;
-    dsty+=lineh;
-  } else if (score&&(score==g.hiscore)) {
-    srcc=strings_get(&src,1,13);
-    w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,src,srcc,0xffffffff);
-    if (w1>w) w=w1;
-    dsty+=lineh;
-  } else if (g.hiscore) {
-    struct strings_insertion ins={'i',.i=g.hiscore};
-    int textc=strings_format(text,sizeof(text),1,9,&ins,1);
-    if ((textc<1)||(textc>sizeof(text))) textc=0;
-    w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,text,textc,0xffffffff);
     if (w1>w) w=w1;
     dsty+=lineh;
   }

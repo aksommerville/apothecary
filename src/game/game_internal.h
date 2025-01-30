@@ -17,7 +17,7 @@
 #define ARROW_CLOCK_PERIOD 1.000
 #define GAME_END_TIME 3.0
 #define GAME_END_FADE_TIME 1.0
-#define BONUS_TOAST_TTL 1.5
+#define GIVE_UP_TIME (60.0*9.0) /* Don't let the clock get near the second minute digit. */
 
 struct racer {
   double x,y; // world pixels
@@ -31,12 +31,6 @@ struct target {
   uint8_t tileid;
 };
 
-struct bonus_toast {
-  double x,y; // world pixels
-  int v; // seconds
-  double ttl;
-};
-
 struct game {
   struct racer racer;
   int indx; // dpad state: -1,0,1
@@ -44,15 +38,15 @@ struct game {
   int brake; // button state
   const struct map *map;
   struct target target;
-  double clock; // Counts down to game over. Seconds.
+  double clock; // Game clock, seconds. Counts up.
   int running;
-  int time_bonus; // Amount for next bonus.
   double arrowclock; // Counts down.
-  int score; // ie deliveries completed
   double endtime; // Counts down once !running.
   double dotanimclock;
   int dotanimframe; // 0..1. Updates constantly, even when not animated.
-  struct bonus_toast bonus_toast;
+  struct dropoff *dropoffv; // Starts with same content as map but in a random order.
+  int dropoffc; // We pick them off the end. Includes the active one.
+  struct dropoff *dropoff;
 };
 
 void physics_update(struct game *game,double elapsed);
