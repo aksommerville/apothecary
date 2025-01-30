@@ -52,8 +52,8 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Physics: Tighten up cornering and braking, and ensure when pressing into a wall, direction still shifts as if you were free -- it doesn't right now, and it's a little weird.
 - - [x] Turn off music and sound. UI is present and sets a flag, but doesn't actually do anything.
 - - [x] Tune map so there are neat tricks you can pull, like there's always a wall to bounce off where you need one.
-- - [ ] Show progress 0..6
-- - [ ] Option to abort game, press Start.
+- - [x] Show progress 0..6
+- - [x] Option to abort game, press Start.
 - Sat 1 Feb
 - - [x] Music.
 - - [ ] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
@@ -88,7 +88,7 @@ Stretch goals.
 Mon 27 Jan: Flying, map loading, music. Rather more than I expected to get done day one!
 Tue 28 Jan: Random pickup and deliver. Clock, score. Preliminary hello and gameover splashes.
 Wed 29 Jan: Prettier graphics for Dot. Real map. Changed to time-based scoring with fixed deliveries. Hello menu.
-Thu 30 Jan: 
+Thu 30 Jan: Sound effects.
 Fri 31 Jan: 
 Sat 1 Feb: 
 Sun 2 Feb: 

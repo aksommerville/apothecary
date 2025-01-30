@@ -39,6 +39,8 @@ extern struct g {
   int enable_music;
   int enable_sound;
   int songid;
+  
+  int skip_next_gameover;
 } g;
 
 // Noop if the existing hiscore is higher.

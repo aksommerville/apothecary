@@ -49,6 +49,9 @@ struct game {
   struct dropoff *dropoff;
   double bump_sound_time; // For regulating collision sound effects.
   double flight_sound_time;
+  int pause_selp; // (0,1,2)=(not paused,resume,main menu)
+  int texid_resume,w_resume,h_resume; // Pause menu labels. Language can't change during play, so we only need them once.
+  int texid_menu,w_menu,h_menu;
 };
 
 void physics_update(struct game *game,double elapsed);

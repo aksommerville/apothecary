@@ -199,7 +199,16 @@ void game_render(struct game *game) {
     graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+s%10,0);
   }
   
-  //TODO Show dropoffs completed and total.
+  /* Progress indicator left of the clock.
+   */
+  {
+    int16_t dstx=FBW-30-NS_sys_tilesize;
+    int16_t dsty=8;
+    int i=0;
+    for (;i<game->map->dropoffc;i++,dstx-=NS_sys_tilesize) {
+      graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,(i>=game->dropoffc)?0x3d:0x3c,0);
+    }
+  }
   
   /* If we're ended, fade to black.
    */
@@ -208,5 +217,28 @@ void game_render(struct game *game) {
     if (alpha<=0) return;
     if (alpha>0xff) alpha=0xff;
     graf_draw_rect(&g.graf,0,0,FBW,FBH,0x00000000|alpha);
+  }
+  
+  /* Pause menu.
+   */
+  if (game->pause_selp) {
+    graf_draw_rect(&g.graf,0,0,FBW,FBH,0x000000c0);
+    if (!game->texid_resume) {
+      game->texid_resume=font_texres_oneline(g.font,1,17,FBW,0xffffffff);
+      egg_texture_get_status(&game->w_resume,&game->h_resume,game->texid_resume);
+    }
+    if (!game->texid_menu) {
+      game->texid_menu=font_texres_oneline(g.font,1,18,FBW,0xffffffff);
+      egg_texture_get_status(&game->w_menu,&game->h_menu,game->texid_menu);
+    }
+    int margin=4;
+    int boxw=((game->w_resume>game->w_menu)?game->w_resume:game->w_menu)+(margin<<1);
+    int boxh=game->h_resume+game->h_menu+margin*3;
+    int dstx=(FBW>>1)-(boxw>>1);
+    int dsty=(FBH>>1)-(boxh>>1);
+    graf_draw_rect(&g.graf,dstx,dsty,boxw,boxh,0x200000ff);
+    graf_draw_rect(&g.graf,dstx+1,dsty+1+((game->pause_selp==2)?(game->h_resume+margin):0),boxw-2,game->h_resume+margin*2-2,0x203040ff);
+    graf_draw_decal(&g.graf,game->texid_resume,dstx+(boxw>>1)-(game->w_resume>>1),dsty+margin,0,0,game->w_resume,game->h_resume,0);
+    graf_draw_decal(&g.graf,game->texid_menu,dstx+(boxw>>1)-(game->w_menu>>1),dsty+boxh-margin-game->h_menu,0,0,game->w_menu,game->h_menu,0);
   }
 }

@@ -5,6 +5,8 @@
  
 void game_del(struct game *game) {
   if (!game) return;
+  egg_texture_del(game->texid_resume);
+  egg_texture_del(game->texid_menu);
   free(game);
 }
 
@@ -84,6 +86,31 @@ struct game *game_new() {
  */
  
 void game_input(struct game *game,int input,int pvinput) {
+
+  if ((input&EGG_BTN_AUX1)&&!(pvinput&EGG_BTN_AUX1)) {
+    play_sound(RID_sound_uiactivate);
+    if (game->pause_selp) game->pause_selp=0;
+    else game->pause_selp=1;
+  }
+  
+  if (game->pause_selp) {
+    game->indx=game->accel=game->brake=0;
+    if ((input&EGG_BTN_UP)&&!(pvinput&EGG_BTN_UP)) { play_sound(RID_sound_uimotion); game->pause_selp--; }
+    if ((input&EGG_BTN_DOWN)&&!(pvinput&EGG_BTN_DOWN)) { play_sound(RID_sound_uimotion); game->pause_selp++; }
+    if (game->pause_selp<1) game->pause_selp=2; else if (game->pause_selp>2) game->pause_selp=1;
+    if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
+      play_sound(RID_sound_uiactivate);
+      if (game->pause_selp==1) { // Resume.
+        game->pause_selp=0;
+      } else { // Main menu.
+        game->running=0;
+        game->endtime=0.0;
+        g.skip_next_gameover=1;
+      }
+    }
+    return;
+  }
+
   if ((input&EGG_BTN_LEFT)&&!(pvinput&EGG_BTN_LEFT)) game->indx=-1;
   else if ((game->indx<0)&&!(input&EGG_BTN_LEFT)) game->indx=0;
   if ((input&EGG_BTN_RIGHT)&&!(pvinput&EGG_BTN_RIGHT)) game->indx=1;
@@ -153,7 +180,7 @@ int game_update(struct game *game,double elapsed) {
 
   /* Advance clocks.
    */
-  if (game->running) {
+  if (game->running&&!game->pause_selp) {
     game->clock+=elapsed;
     if (game->clock>GIVE_UP_TIME) {
       game->running=0;
@@ -176,7 +203,7 @@ int game_update(struct game *game,double elapsed) {
 
   /* Poll input. Update hero's angle and velocity.
    */
-  if (game->running) {
+  if (game->running&&!game->pause_selp) {
     game_update_flight_sounds(game);
     if (game->accel&&game->indx) {
       // If you turn while accelerating, first reduce velocity just a hair.
@@ -214,44 +241,46 @@ int game_update(struct game *game,double elapsed) {
   
   /* If the brake is on, accelerator is off, or game is ended, decelerate.
    */
-  if (!game->running||game->brake||!game->accel) {
-    double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-    if (v2>0.0) {
-      double v=sqrt(v2);
-      double rate;
-      if (!game->running) rate=NATURAL_DECELERATION;
-      else if (game->brake) rate=BRAKE_DECELERATION;
-      else rate=NATURAL_DECELERATION;
-      double loss=rate*elapsed;
-      if (loss>=v) {
-        game->racer.vx=0.0;
-        game->racer.vy=0.0;
-      } else {
-        double adj=(v-loss)/v;
-        game->racer.vx*=adj;
-        game->racer.vy*=adj;
+  if (!game->pause_selp) {
+    if (!game->running||game->brake||!game->accel) {
+      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
+      if (v2>0.0) {
+        double v=sqrt(v2);
+        double rate;
+        if (!game->running) rate=NATURAL_DECELERATION;
+        else if (game->brake) rate=BRAKE_DECELERATION;
+        else rate=NATURAL_DECELERATION;
+        double loss=rate*elapsed;
+        if (loss>=v) {
+          game->racer.vx=0.0;
+          game->racer.vy=0.0;
+        } else {
+          double adj=(v-loss)/v;
+          game->racer.vx*=adj;
+          game->racer.vy*=adj;
+        }
       }
     }
-  }
   
-  /* Apply hero velocity optimistically.
-   */
-  game->racer.x+=game->racer.vx*elapsed;
-  game->racer.y+=game->racer.vy*elapsed;
+    /* Apply hero velocity optimistically.
+     */
+    game->racer.x+=game->racer.vx*elapsed;
+    game->racer.y+=game->racer.vy*elapsed;
   
-  /* General physics.
-   * (in truth, it only corrects hero against static geometry, it's very simple).
-   */
-  physics_update(game,elapsed);
+    /* General physics.
+     * (in truth, it only corrects hero against static geometry, it's very simple).
+     */
+    physics_update(game,elapsed);
   
-  /* Check whether we hit the target.
-   */
-  if (game->running&&game->target.type) {
-    double dx=game->racer.x-game->target.x;
-    double dy=game->racer.y-game->target.y;
-    double d2=dx*dx+dy*dy;
-    if (d2<TARGET_DISTANCE_2) {
-      target_reached(game);
+    /* Check whether we hit the target.
+     */
+    if (game->running&&game->target.type) {
+      double dx=game->racer.x-game->target.x;
+      double dy=game->racer.y-game->target.y;
+      double d2=dx*dx+dy*dy;
+      if (d2<TARGET_DISTANCE_2) {
+        target_reached(game);
+      }
     }
   }
   

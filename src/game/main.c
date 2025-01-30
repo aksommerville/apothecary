@@ -112,7 +112,12 @@ void egg_client_update(double elapsed) {
     }
   } else if (g.game) {
     if (game_update(g.game,elapsed)<0) {
-      main_begin_gameover();
+      if (g.skip_next_gameover) {
+        g.skip_next_gameover=0;
+        main_begin_hello();
+      } else {
+        main_begin_gameover();
+      }
     }
   } else if (g.hello) {
     if (hello_update(g.hello,elapsed)<0) {
