@@ -47,6 +47,8 @@ struct game {
   struct dropoff *dropoffv; // Starts with same content as map but in a random order.
   int dropoffc; // We pick them off the end. Includes the active one.
   struct dropoff *dropoff;
+  double bump_sound_time; // For regulating collision sound effects.
+  double flight_sound_time;
 };
 
 void physics_update(struct game *game,double elapsed);

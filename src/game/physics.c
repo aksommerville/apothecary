@@ -6,10 +6,11 @@
  
 void physics_update(struct game *game,double elapsed) {
 
-  double herol=game->racer.x-HERO_RADIUS;
-  double heror=game->racer.x+HERO_RADIUS;
-  double herot=game->racer.y-HERO_RADIUS;
-  double herob=game->racer.y+HERO_RADIUS;
+  double x0=game->racer.x,y0=game->racer.y;
+  double herol=x0-HERO_RADIUS;
+  double heror=x0+HERO_RADIUS;
+  double herot=y0-HERO_RADIUS;
+  double herob=y0+HERO_RADIUS;
   
   const struct sbox *sbox=game->map->sboxv;
   int sboxi=game->map->sboxc;
@@ -49,5 +50,25 @@ void physics_update(struct game *game,double elapsed) {
     else if ((escy>0.0)&&(game->racer.vy<0.0)) game->racer.vy*=COLLISION_DAMP;
     else if ((escx<0.0)&&(game->racer.vx>0.0)) game->racer.vx*=COLLISION_DAMP;
     else if ((escx>0.0)&&(game->racer.vx<0.0)) game->racer.vx*=COLLISION_DAMP;
+  }
+  
+  // If we corrected substantially, play a sound effect.
+  double dx=game->racer.x-x0,dy=game->racer.y-y0;
+  double d2=dx*dx+dy*dy;
+  // Head-on collisions at high velocity get near 20. Anything over 1 is substantial.
+  if (d2>=3.0) {
+    //fprintf(stderr,"HEAVY COLLISION %f\n",d2);
+    play_sound(RID_sound_collheavy);
+    game->bump_sound_time=game->clock;
+  } else if (d2>=0.75) {
+    //fprintf(stderr,"MEDIUM COLLISION %f\n",d2);
+    play_sound(RID_sound_collmed);
+    game->bump_sound_time=game->clock;
+  } else if (d2>=0.080) {
+    if (game->clock-game->bump_sound_time>=0.250) {
+      //fprintf(stderr,"LIGHT COLLISION %f\n",d2);
+      play_sound(RID_sound_colllight);
+      game->bump_sound_time=game->clock;
+    }
   }
 }

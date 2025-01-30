@@ -171,6 +171,7 @@ struct hello *hello_new() {
  */
  
 static void hello_xmotion(struct hello *hello,int d) {
+  play_sound(RID_sound_uimotion);
   hello->optionp+=d;
   if (hello->optionp<0) hello->optionp=hello->optionc-1;
   else if (hello->optionp>=hello->optionc) hello->optionp=0;
@@ -179,6 +180,7 @@ static void hello_xmotion(struct hello *hello,int d) {
 
 static void hello_ymotion(struct hello *hello,int d) {
   if ((hello->optionp<0)||(hello->optionp>=hello->optionc)) return;
+  play_sound(RID_sound_uimotion);
   struct option *option=hello->optionv+hello->optionp;
   switch (option->id) {
   
@@ -219,12 +221,12 @@ static void hello_activate(struct hello *hello) {
   if ((hello->optionp<0)||(hello->optionp>=hello->optionc)) return;
   struct option *option=hello->optionv+hello->optionp;
   switch (option->id) {
-    case HELLO_OPTION_PLAY: hello->dismissed=1; break;
+    case HELLO_OPTION_PLAY: play_sound(RID_sound_uiactivate); hello->dismissed=1; break;
     case HELLO_OPTION_QUIT: egg_terminate(0); break;
     case HELLO_OPTION_LANGUAGE: hello_ymotion(hello,1); break;
     case HELLO_OPTION_MUSIC: hello_ymotion(hello,1); break;
     case HELLO_OPTION_SOUND: hello_ymotion(hello,1); break;
-    case HELLO_OPTION_INPUT: egg_input_configure(); break;
+    case HELLO_OPTION_INPUT: play_sound(RID_sound_uiactivate); egg_input_configure(); break;
   }
 }
 
@@ -232,13 +234,17 @@ static void hello_activate(struct hello *hello) {
  */
  
 void hello_input(struct hello *hello,int input,int pvinput) {
-  if ((input&EGG_BTN_LEFT)&&!(pvinput&EGG_BTN_LEFT)) hello_xmotion(hello,-1);
-  if ((input&EGG_BTN_RIGHT)&&!(pvinput&EGG_BTN_RIGHT)) hello_xmotion(hello,1);
-  if ((input&EGG_BTN_UP)&&!(pvinput&EGG_BTN_UP)) hello_ymotion(hello,-1);
-  if ((input&EGG_BTN_DOWN)&&!(pvinput&EGG_BTN_DOWN)) hello_ymotion(hello,1);
+  if (hello->clock>=3.0) {
+    if ((input&EGG_BTN_LEFT)&&!(pvinput&EGG_BTN_LEFT)) hello_xmotion(hello,-1);
+    if ((input&EGG_BTN_RIGHT)&&!(pvinput&EGG_BTN_RIGHT)) hello_xmotion(hello,1);
+    if ((input&EGG_BTN_UP)&&!(pvinput&EGG_BTN_UP)) hello_ymotion(hello,-1);
+    if ((input&EGG_BTN_DOWN)&&!(pvinput&EGG_BTN_DOWN)) hello_ymotion(hello,1);
+  }
   if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
-    if (hello->clock<3.0) hello->clock=3.0;
-    else hello_activate(hello);
+    if (hello->clock<3.0) {
+      play_sound(RID_sound_uiactivate);
+      hello->clock=3.0;
+    } else hello_activate(hello);
   }
 }
 

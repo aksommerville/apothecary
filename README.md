@@ -52,20 +52,23 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Physics: Tighten up cornering and braking, and ensure when pressing into a wall, direction still shifts as if you were free -- it doesn't right now, and it's a little weird.
 - - [x] Turn off music and sound. UI is present and sets a flag, but doesn't actually do anything.
 - - [x] Tune map so there are neat tricks you can pull, like there's always a wall to bounce off where you need one.
+- - [ ] Show progress 0..6
+- - [ ] Option to abort game, press Start.
 - Sat 1 Feb
 - - [x] Music.
 - - [ ] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
 - - [x] Thirty Seconds doesn't loop quite right.
 - - [x] Emotional Support Bird: Add arpeggio peak notes to bass in second pass. (right hand does that on a piano, but with different voices one notices a gap).
-- - [ ] Sound effects.
-- - - [ ] Braking.
-- - - [ ] Flying: Ongoing repeating sound, varies with velocity.
-- - - [ ] Pickup.
-- - - [ ] Dropoff.
+- - [x] Sound effects.
+- - - [x] Braking.
+- - - [x] Flying: Ongoing repeating sound, varies with velocity.
+- - - [x] Pickup.
+- - - [x] Dropoff.
 - - [ ] 7 distinct customers
 - - [ ] Decorative touches.
 - - - [ ] Little people that go "hey" and jump out of your way.
 - - [x] physics: I glossed over corner collisions. Does it matter? ...been playing it for two days, and no, i don't notice anything wrong.
+- - [ ] Egg's subtractive voices are markedly different native vs web. I like what we have for native. Look into repairing egg.
 - - [ ] Plan for game to be complete by EOD.
 - Sun 2 Feb
 - - [ ] Itch page, ancillary bits, final upload.

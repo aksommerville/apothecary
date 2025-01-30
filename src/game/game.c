@@ -102,6 +102,7 @@ static void target_reached(struct game *game) {
    */
   if (game->target.type==NS_target_dropoff) {
     game->dropoffc--;
+    play_sound(RID_sound_deliver);
     if (game->dropoffc<=0) {
       game->target.type=0;
       game->running=0;
@@ -119,11 +120,30 @@ static void target_reached(struct game *game) {
   /* If we were picking up, set target to the current dropoff.
    */
   } else {
+    play_sound(RID_sound_pickup);
     game->target.type=NS_target_dropoff;
     game->target.tileid=game->dropoff->tileid;
     game->target.x=(game->dropoff->x+0.5)*NS_sys_tilesize;
     game->target.y=(game->dropoff->y+0.5)*NS_sys_tilesize;
   }
+}
+
+/* Ongoing sound effects for acceleration, braking, and turning.
+ */
+ 
+static void game_update_flight_sounds(struct game *game) {
+  if (game->clock-game->flight_sound_time<0.080) return;
+  int rid=0;
+  if (game->brake) rid=RID_sound_brake;
+  else if (game->accel) {
+    double d2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
+    if (d2>=80000.0) rid=RID_sound_whooshmax;
+    else if (d2>=20000.0) rid=RID_sound_whooshmid;
+    else rid=RID_sound_whooshmin;
+  }
+  if (!rid) return;
+  game->flight_sound_time=game->clock;
+  play_sound(rid);
 }
 
 /* Update.
@@ -157,6 +177,7 @@ int game_update(struct game *game,double elapsed) {
   /* Poll input. Update hero's angle and velocity.
    */
   if (game->running) {
+    game_update_flight_sounds(game);
     if (game->accel&&game->indx) {
       // If you turn while accelerating, first reduce velocity just a hair.
       // This is a penalty for turning, but also makes turns tighter.
