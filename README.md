@@ -62,9 +62,10 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - - [ ] Flying: Ongoing repeating sound, varies with velocity.
 - - - [ ] Pickup.
 - - - [ ] Dropoff.
+- - [ ] 7 distinct customers
 - - [ ] Decorative touches.
 - - - [ ] Little people that go "hey" and jump out of your way.
-- - [ ] physics: I glossed over corner collisions. Does it matter?
+- - [x] physics: I glossed over corner collisions. Does it matter? ...been playing it for two days, and no, i don't notice anything wrong.
 - - [ ] Plan for game to be complete by EOD.
 - Sun 2 Feb
 - - [ ] Itch page, ancillary bits, final upload.
@@ -83,7 +84,7 @@ Stretch goals.
 
 Mon 27 Jan: Flying, map loading, music. Rather more than I expected to get done day one!
 Tue 28 Jan: Random pickup and deliver. Clock, score. Preliminary hello and gameover splashes.
-Wed 29 Jan: Prettier graphics for Dot. Real map. Changed to time-based scoring with fixed deliveries.
+Wed 29 Jan: Prettier graphics for Dot. Real map. Changed to time-based scoring with fixed deliveries. Hello menu.
 Thu 30 Jan: 
 Fri 31 Jan: 
 Sat 1 Feb: 

@@ -3,7 +3,7 @@
 #define HELLO_MESSAGE_TIME 6.0
 #define HELLO_MESSAGE_FADE_TIME 0.5 /* in and out */
 
-#define HELLO_OPTION_WIDTH 80
+#define HELLO_OPTION_WIDTH 100
 #define HELLO_OPTION_HEIGHT 24
 
 #define OPTION_SLIDE_RATE 4.000 /* hz */
