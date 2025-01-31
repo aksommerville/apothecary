@@ -72,13 +72,13 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] physics: I glossed over corner collisions. Does it matter? ...been playing it for two days, and no, i don't notice anything wrong.
 - - [x] I checked with admins and it's kosher: Submit early to the jam. Maybe get some feedback while we're still allowed to update.
 - - [x] Egg's subtractive voices are markedly different native vs web. I like what we have for native. Look into repairing egg.
-- - [ ] Pi build.
-- - [ ] MacOS build.
-- - [ ] Add to aksommerville.com
+- - [x] Pi build.
+- - [x] MacOS build.
+- - [x] Add to aksommerville.com
 - - [x] Plan for game to be complete by EOD.
 - Sun 2 Feb
 - - [x] Itch page, ancillary bits, final upload.
-- - [ ] Submit.
+- - [x] Submit.
 - Mon 3 Feb
 - - Jam ends 23:45. Time for last-minute repairs etc. Don't plan anything for today.
 
