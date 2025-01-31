@@ -10,8 +10,9 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 
 - Orthgraphic racing, think Micro Machines.
 - Pick up from the apothecary, then they tell you where to deliver it.
-- Pick up and delivery both give you some boost time, a decreasing amount each time.
-- Play until you run out of time.
+- ~Pick up and delivery both give you some boost time, a decreasing amount each time.~
+- ~Play until you run out of time.~
+- Make seven deliveries, always the same seven but order randomized, and play for time.
 
 ## TODO
 
@@ -55,7 +56,6 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - [x] Show progress 0..6
 - - [x] Option to abort game, press Start.
 - Sat 1 Feb
-- - [ ] I checked with admins and it's kosher: Submit early to the jam. Maybe get some feedback while we're still allowed to update.
 - - [x] Music.
 - - [x] French and Spanish text, why not. Russian(TurtleMan), Finnish(Joop)
 - - [x] Thirty Seconds doesn't loop quite right.
@@ -70,10 +70,14 @@ For [HEAVENJAM #1](https://itch.io/jam/heavenjam-1), 2025-01-27 .. 2025-02-03.
 - - - [x] Little people that go "hey" and jump out of your way.
 - - - [x] Add graphics until we run out of tilesheet.
 - - [x] physics: I glossed over corner collisions. Does it matter? ...been playing it for two days, and no, i don't notice anything wrong.
-- - [ ] Egg's subtractive voices are markedly different native vs web. I like what we have for native. Look into repairing egg.
-- - [ ] Plan for game to be complete by EOD.
+- - [x] I checked with admins and it's kosher: Submit early to the jam. Maybe get some feedback while we're still allowed to update.
+- - [x] Egg's subtractive voices are markedly different native vs web. I like what we have for native. Look into repairing egg.
+- - [ ] Pi build.
+- - [ ] MacOS build.
+- - [ ] Add to aksommerville.com
+- - [x] Plan for game to be complete by EOD.
 - Sun 2 Feb
-- - [ ] Itch page, ancillary bits, final upload.
+- - [x] Itch page, ancillary bits, final upload.
 - - [ ] Submit.
 - Mon 3 Feb
 - - Jam ends 23:45. Time for last-minute repairs etc. Don't plan anything for today.
@@ -90,8 +94,8 @@ Stretch goals.
 Mon 27 Jan: Flying, map loading, music. Rather more than I expected to get done day one!
 Tue 28 Jan: Random pickup and deliver. Clock, score. Preliminary hello and gameover splashes.
 Wed 29 Jan: Prettier graphics for Dot. Real map. Changed to time-based scoring with fixed deliveries. Hello menu.
-Thu 30 Jan: Sound effects.
-Fri 31 Jan: 
+Thu 30 Jan: Sound effects. Bystanders. Filled up tilesheet. It's done!
+Fri 31 Jan: No changes today. I've been playing and I like it. Ready to cut 1.0.0 and release it.
 Sat 1 Feb: 
 Sun 2 Feb: 
 Mon 3 Feb: 
