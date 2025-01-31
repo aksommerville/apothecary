@@ -41,27 +41,27 @@ static int map_generate_sboxv(struct map *map) {
   if (!visited) return -1;
   
   // Add a huge sbox on each of the four edges.
-  const double HUGE=600.0;
+  const double FARAWAY=600.0;
   if (!(sbox=map_sbox_add(map))) return -1;
-  sbox->x=-HUGE;
-  sbox->y=-HUGE;
-  sbox->w=HUGE;
-  sbox->h=map->h*NS_sys_tilesize+HUGE*2.0;
+  sbox->x=-FARAWAY;
+  sbox->y=-FARAWAY;
+  sbox->w=FARAWAY;
+  sbox->h=map->h*NS_sys_tilesize+FARAWAY*2.0;
   if (!(sbox=map_sbox_add(map))) return -1;
-  sbox->x=-HUGE;
-  sbox->y=-HUGE;
-  sbox->w=map->w*NS_sys_tilesize+HUGE*2.0;
-  sbox->h=HUGE;
+  sbox->x=-FARAWAY;
+  sbox->y=-FARAWAY;
+  sbox->w=map->w*NS_sys_tilesize+FARAWAY*2.0;
+  sbox->h=FARAWAY;
   if (!(sbox=map_sbox_add(map))) return -1;
-  sbox->x=-HUGE;
+  sbox->x=-FARAWAY;
   sbox->y=map->h*NS_sys_tilesize;
-  sbox->w=map->w*NS_sys_tilesize+HUGE*2.0;
-  sbox->h=HUGE;
+  sbox->w=map->w*NS_sys_tilesize+FARAWAY*2.0;
+  sbox->h=FARAWAY;
   if (!(sbox=map_sbox_add(map))) return -1;
   sbox->x=map->w*NS_sys_tilesize;
-  sbox->y=-HUGE;
-  sbox->w=HUGE;
-  sbox->h=map->h*NS_sys_tilesize+HUGE*2.0;
+  sbox->y=-FARAWAY;
+  sbox->w=FARAWAY;
+  sbox->h=map->h*NS_sys_tilesize*FARAWAY*2.0;
   
   // Then condense solid cells into rectangles and add an sbox for each.
   int p=0,row=0;

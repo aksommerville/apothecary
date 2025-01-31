@@ -157,7 +157,7 @@ void game_render(struct game *game) {
   if (worldh<FBH) blackout=1;
   else if (cameray<0) cameray=0;
   else if (cameray+FBH>worldh) cameray=worldh-FBH;
-  
+
   if (blackout) graf_draw_rect(&g.graf,0,0,FBW,FBH,0x000000ff);
   
   /* Draw background grid.
