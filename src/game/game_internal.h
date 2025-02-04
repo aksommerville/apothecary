@@ -3,13 +3,13 @@
 
 #include "game.h"
 
-#define TURN_SPEED 4.000 /* radian/s */
+#define TURN_SPEED 5.000 /* radian/s */
 #define FLY_ACCEL 250.0 /* px/s**2 */
-#define FLY_SPEED_LIMIT 300.0 /* px/s */
+#define FLY_SPEED_LIMIT 375.0 /* px/s */
 #define FLY_SPEED_LIMIT_2 (FLY_SPEED_LIMIT*FLY_SPEED_LIMIT)
 #define NATURAL_DECELERATION 200.0 /* px/s**2 */
-#define BRAKE_DECELERATION 500.0 /* px/s**2 */
-#define TURN_DECELERATION 100.0 /* px/s**2 */
+#define BRAKE_DECELERATION 800.0 /* px/s**2 */
+#define CORNER_TIGHTEN_FACTOR 1.000 /* Higher for sharper corners. Think of it as the inverse time to reach the target angle. */
 #define HERO_RADIUS 6.0 /* px */
 #define COLLISION_DAMP -0.250
 #define TARGET_DISTANCE 10.0
@@ -24,6 +24,8 @@ struct racer {
   double x,y; // world pixels
   double t; // radians clockwise from UP
   double vx,vy; // inertia
+  double vt; // Angle of inertia
+  double vm; // Magnitude of inertia (ie true speed)
 };
 
 struct target {
@@ -70,5 +72,10 @@ void physics_update(struct game *game,double elapsed);
  * (x,y) are in and out. Returns nonzero if modified.
  */
 int physics_update_1(struct game *game,double *x,double *y,double radius);
+
+/* These parameters are mostly available on (game) too; split out only for clarity.
+ * This updates the sound and hero's position but does not call general physics.
+ */
+void hero_update(struct game *game,struct racer *racer,int accel,int brake,int steer,double elapsed);
 
 #endif

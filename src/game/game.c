@@ -203,24 +203,6 @@ static void target_reached(struct game *game) {
   }
 }
 
-/* Ongoing sound effects for acceleration, braking, and turning.
- */
- 
-static void game_update_flight_sounds(struct game *game) {
-  if (game->clock-game->flight_sound_time<0.080) return;
-  int rid=0;
-  if (game->brake) rid=RID_sound_brake;
-  else if (game->accel) {
-    double d2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-    if (d2>=80000.0) rid=RID_sound_whooshmax;
-    else if (d2>=20000.0) rid=RID_sound_whooshmid;
-    else rid=RID_sound_whooshmin;
-  }
-  if (!rid) return;
-  game->flight_sound_time=game->clock;
-  play_sound(rid);
-}
-
 /* Update.
  */
  
@@ -252,68 +234,12 @@ int game_update(struct game *game,double elapsed) {
   /* Poll input. Update hero's angle and velocity.
    */
   if (game->running&&!game->pause_selp) {
-    game_update_flight_sounds(game);
-    if (game->accel&&game->indx) {
-      // If you turn while accelerating, first reduce velocity just a hair.
-      // This is a penalty for turning, but also makes turns tighter.
-      double loss=TURN_DECELERATION*elapsed;
-      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-      double v=sqrt(v2);
-      if (loss>=v) {
-        game->racer.vx=0.0;
-        game->racer.vy=0.0;
-      } else {
-        double adj=(v-loss)/v;
-        game->racer.vx*=adj;
-        game->racer.vy*=adj;
-      }
-    }
-    if (game->indx) {
-      game->racer.t+=TURN_SPEED*elapsed*game->indx;
-      if (game->racer.t>M_PI) game->racer.t-=M_PI*2.0;
-      else if (game->racer.t<-M_PI) game->racer.t+=M_PI*2.0;
-    }
-    if (game->accel) {
-      double mag=FLY_ACCEL*elapsed;
-      game->racer.vx+=mag*sin(game->racer.t);
-      game->racer.vy+=mag*-cos(game->racer.t);
-      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-      if (v2>FLY_SPEED_LIMIT_2) {
-        double v=sqrt(v2);
-        double adj=FLY_SPEED_LIMIT/v;
-        game->racer.vx*=adj;
-        game->racer.vy*=adj;
-      }
-    }
+    hero_update(game,&game->racer,game->accel,game->brake,game->indx,elapsed);
   }
   
   /* If the brake is on, accelerator is off, or game is ended, decelerate.
    */
   if (!game->pause_selp) {
-    if (!game->running||game->brake||!game->accel) {
-      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-      if (v2>0.0) {
-        double v=sqrt(v2);
-        double rate;
-        if (!game->running) rate=NATURAL_DECELERATION;
-        else if (game->brake) rate=BRAKE_DECELERATION;
-        else rate=NATURAL_DECELERATION;
-        double loss=rate*elapsed;
-        if (loss>=v) {
-          game->racer.vx=0.0;
-          game->racer.vy=0.0;
-        } else {
-          double adj=(v-loss)/v;
-          game->racer.vx*=adj;
-          game->racer.vy*=adj;
-        }
-      }
-    }
-  
-    /* Apply hero velocity optimistically.
-     */
-    game->racer.x+=game->racer.vx*elapsed;
-    game->racer.y+=game->racer.vy*elapsed;
   
     /* General physics.
      * (in truth, it only corrects hero against static geometry, it's very simple).

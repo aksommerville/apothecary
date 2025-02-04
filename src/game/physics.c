@@ -13,7 +13,7 @@ void physics_update(struct game *game,double elapsed) {
   double herob=y0+HERO_RADIUS;
   
   const struct sbox *sbox=game->map->sboxv;
-  int sboxi=game->map->sboxc;
+  int sboxi=game->map->sboxc,any=0;
   for (;sboxi-->0;sbox++) {
     if (sbox->x>=heror) continue;
     if (sbox->y>=herob) continue;
@@ -38,19 +38,26 @@ void physics_update(struct game *game,double elapsed) {
       //TODO Check for corners. And it's possible there's actually no collision.
       continue;
     }
+    any=1;
     
     // Clamp to the box edge per escapement.
-    if (escy<0.0) game->racer.y=sbox->y-HERO_RADIUS;
+         if (escy<0.0) game->racer.y=sbox->y-HERO_RADIUS;
     else if (escy>0.0) game->racer.y=sbox->y+sbox->h+HERO_RADIUS;
     else if (escx<0.0) game->racer.x=sbox->x-HERO_RADIUS;
     else if (escx>0.0) game->racer.x=sbox->x+sbox->w+HERO_RADIUS;
     
     // If racer's velocity on either axis disagrees with the escapement, dampen and reverse that axis.
-    if ((escy<0.0)&&(game->racer.vy>0.0)) game->racer.vy*=COLLISION_DAMP;
+         if ((escy<0.0)&&(game->racer.vy>0.0)) game->racer.vy*=COLLISION_DAMP;
     else if ((escy>0.0)&&(game->racer.vy<0.0)) game->racer.vy*=COLLISION_DAMP;
     else if ((escx<0.0)&&(game->racer.vx>0.0)) game->racer.vx*=COLLISION_DAMP;
     else if ((escx>0.0)&&(game->racer.vx<0.0)) game->racer.vx*=COLLISION_DAMP;
   }
+  if (!any) return;
+  
+  double nvt=atan2(game->racer.vx,-game->racer.vy);
+  double nvm=sqrt(game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy);
+  game->racer.vt=nvt;
+  game->racer.vm=nvm;
   
   // If we corrected substantially, play a sound effect.
   double dx=game->racer.x-x0,dy=game->racer.y-y0;
