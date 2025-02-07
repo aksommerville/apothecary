@@ -24,61 +24,6 @@ static void update_flight_sounds(struct game *game) {
 void hero_update(struct game *game,struct racer *racer,int accel,int brake,int steer,double elapsed) {
   update_flight_sounds(game);
   
-  #if 0 /* old regime, i'm not crazy about it. */
-  if (game->accel&&game->indx) {
-      // If you turn while accelerating, first reduce velocity just a hair.
-      // This is a penalty for turning, but also makes turns tighter.
-      double loss=TURN_DECELERATION*elapsed;
-      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-      double v=sqrt(v2);
-      if (loss>=v) {
-        game->racer.vx=0.0;
-        game->racer.vy=0.0;
-      } else {
-        double adj=(v-loss)/v;
-        game->racer.vx*=adj;
-        game->racer.vy*=adj;
-      }
-    }
-    if (game->indx) {
-      game->racer.t+=TURN_SPEED*elapsed*game->indx;
-      if (game->racer.t>M_PI) game->racer.t-=M_PI*2.0;
-      else if (game->racer.t<-M_PI) game->racer.t+=M_PI*2.0;
-    }
-    if (game->accel) {
-      double mag=FLY_ACCEL*elapsed;
-      game->racer.vx+=mag*sin(game->racer.t);
-      game->racer.vy+=mag*-cos(game->racer.t);
-      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-      if (v2>FLY_SPEED_LIMIT_2) {
-        double v=sqrt(v2);
-        double adj=FLY_SPEED_LIMIT/v;
-        game->racer.vx*=adj;
-        game->racer.vy*=adj;
-      }
-    }
-    
-    if (!game->running||game->brake||!game->accel) {
-      double v2=game->racer.vx*game->racer.vx+game->racer.vy*game->racer.vy;
-      if (v2>0.0) {
-        double v=sqrt(v2);
-        double rate;
-        if (!game->running) rate=NATURAL_DECELERATION;
-        else if (game->brake) rate=BRAKE_DECELERATION;
-        else rate=NATURAL_DECELERATION;
-        double loss=rate*elapsed;
-        if (loss>=v) {
-          game->racer.vx=0.0;
-          game->racer.vy=0.0;
-        } else {
-          double adj=(v-loss)/v;
-          game->racer.vx*=adj;
-          game->racer.vy*=adj;
-        }
-      }
-    }
-  #endif
-  
   // Turn.
   if (steer) {
     racer->t+=TURN_SPEED*elapsed*steer;

@@ -94,7 +94,7 @@ static int gameover_render_message(struct gameover *go) {
   else go->texw=w;
   if (dsty>FBH) go->texh=FBH;
   else go->texh=dsty;
-  egg_texture_load_raw(go->texid,EGG_TEX_FMT_RGBA,go->texw,go->texh,FBW<<2,rgba,FBW*FBH*4);
+  egg_texture_load_raw(go->texid,go->texw,go->texh,FBW<<2,rgba,FBW*FBH*4);
   
   free(rgba);
   return 0;
