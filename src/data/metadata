@@ -12,3 +12,5 @@ copyright=(c) 2025 AK Sommerville
 genre=Racing
 iconImage=2
 contact=aksommerville@gmail.com
+incfgMask=dsw
+# Not naming the buttons, because I have the UI text in a bunch of languages, and lack the patience to look these up in all of them :(

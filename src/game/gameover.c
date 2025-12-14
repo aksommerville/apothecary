@@ -47,7 +47,6 @@ static int gameover_format_time(char *dst,int dsta,double f) {
 static int gameover_render_message(struct gameover *go) {
   if ((go->texid=egg_texture_new())<1) return -1;
   int score=0;
-  //TODO Update for new scoring regime.
   
   /* Allocate a scratch buffer the size of the framebuffer.
    * We'll implicitly crop it when uploading to the texture.
@@ -63,8 +62,8 @@ static int gameover_render_message(struct gameover *go) {
   // "Your score: M:SS.mmm"
   {
     tmpc=gameover_format_time(tmp,sizeof(tmp),g.game->clock);
-    struct strings_insertion ins={'s',.s={.v=tmp,.c=tmpc}};
-    textc=strings_format(text,sizeof(text),1,3,&ins,1);
+    struct text_insertion ins={'s',.s={.v=tmp,.c=tmpc}};
+    textc=text_format_res(text,sizeof(text),1,3,&ins,1);
     if ((textc<0)||(textc>sizeof(text))) textc=0;
     w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,text,textc,0xffffffff);
     if (w1>w) w=w1;
@@ -74,8 +73,8 @@ static int gameover_render_message(struct gameover *go) {
   // "High score: M:SS.mmm"
   {
     tmpc=gameover_format_time(tmp,sizeof(tmp),g.hiscore);
-    struct strings_insertion ins={'s',.s={.v=tmp,.c=tmpc}};
-    textc=strings_format(text,sizeof(text),1,4,&ins,1);
+    struct text_insertion ins={'s',.s={.v=tmp,.c=tmpc}};
+    textc=text_format_res(text,sizeof(text),1,4,&ins,1);
     if ((textc<0)||(textc>sizeof(text))) textc=0;
     w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,text,textc,0xffffffff);
     if (w1>w) w=w1;
@@ -84,7 +83,7 @@ static int gameover_render_message(struct gameover *go) {
   
   // "New high score!"
   if (g.hiscore_is_new) {
-    srcc=strings_get(&src,1,5);
+    srcc=text_get_string(&src,1,5);
     w1=font_render_string(rgba,FBW,FBH,FBW<<2,0,dsty,g.font,src,srcc,0xffffffff);
     if (w1>w) w=w1;
     dsty+=lineh;
@@ -142,11 +141,12 @@ int gameover_update(struct gameover *go,double elapsed) {
  */
  
 void gameover_render(struct gameover *go) {
-  graf_draw_rect(&g.graf,0,0,FBW,FBH,0x080420ff);
+  graf_fill_rect(&g.graf,0,0,FBW,FBH,0x080420ff);
   
   int dstx=(FBW>>1)-(go->texw>>1);
   int dsty=(FBH>>1)-(go->texh>>1);
-  graf_draw_decal(&g.graf,go->texid,dstx,dsty,0,0,go->texw,go->texh,0);
+  graf_set_input(&g.graf,go->texid);
+  graf_decal(&g.graf,dstx,dsty,0,0,go->texw,go->texh);
   
   /* Fade from black at startup.
    */
@@ -154,6 +154,6 @@ void gameover_render(struct gameover *go) {
     int alpha=256.0-(go->clock*256.0)/GAMEOVER_FADE_IN_TIME;
     if (alpha<=0) return;
     if (alpha>0xff) alpha=0xff;
-    graf_draw_rect(&g.graf,0,0,FBW,FBH,0x00000000|alpha);
+    graf_fill_rect(&g.graf,0,0,FBW,FBH,0x00000000|alpha);
   }
 }

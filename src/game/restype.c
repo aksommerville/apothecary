@@ -149,22 +149,22 @@ int map_install(int rid,const void *serial,int serialc) {
     mapa=na;
   }
   struct map *dst=mapv+rid-1;
-  struct rom_map src;
-  if (rom_map_decode(&src,serial,serialc)<0) return -1;
+  struct map_res src;
+  if (map_res_decode(&src,serial,serialc)<0) return -1;
   dst->id=rid;
   dst->w=src.w;
   dst->h=src.h;
   dst->v=src.v;
-  dst->cmdv=src.cmdv;
+  dst->cmdv=src.cmd;
   dst->cmdc=src.cmdc;
-  struct rom_command_reader reader={.v=src.cmdv,.c=src.cmdc};
-  struct rom_command cmd;
-  while (rom_command_reader_next(&cmd,&reader)>0) {
+  struct cmdlist_reader reader={.v=src.cmd,.c=src.cmdc};
+  struct cmdlist_entry cmd;
+  while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
-      case CMD_map_image: dst->imageid=(cmd.argv[0]<<8)|cmd.argv[1]; break;
-      case CMD_map_hero: dst->herox=cmd.argv[0]; dst->heroy=cmd.argv[1]; break;
-      case CMD_map_pickup: dst->pickupx=cmd.argv[0]; dst->pickupy=cmd.argv[1]; break;
-      case CMD_map_dropoff: if (map_dropoff_add(dst,cmd.argv)<0) return -1; break;
+      case CMD_map_image: dst->imageid=(cmd.arg[0]<<8)|cmd.arg[1]; break;
+      case CMD_map_hero: dst->herox=cmd.arg[0]; dst->heroy=cmd.arg[1]; break;
+      case CMD_map_pickup: dst->pickupx=cmd.arg[0]; dst->pickupy=cmd.arg[1]; break;
+      case CMD_map_dropoff: if (map_dropoff_add(dst,cmd.arg)<0) return -1; break;
     }
   }
   return 0;
@@ -186,10 +186,10 @@ int tilesheet_install(int rid,const void *serial,int serialc) {
     tilesheeta=na;
   }
   uint8_t *dst=tilesheetv+(rid-1)*256;
-  struct rom_tilesheet_reader reader;
-  if (rom_tilesheet_reader_init(&reader,serial,serialc)<0) return -1;
-  struct rom_tilesheet_entry entry;
-  while (rom_tilesheet_reader_next(&entry,&reader)>0) {
+  struct tilesheet_reader reader;
+  if (tilesheet_reader_init(&reader,serial,serialc)<0) return -1;
+  struct tilesheet_entry entry;
+  while (tilesheet_reader_next(&entry,&reader)>0) {
     if (entry.tableid!=NS_tilesheet_physics) continue;
     memcpy(dst+entry.tileid,entry.v,entry.c);
   }
@@ -213,16 +213,6 @@ int sprdef_install(int rid,const void *serial,int serialc) {
   }
   struct sprdef *dst=sprdefv+rid-1;
   dst->id=rid;
-  struct rom_sprite rspr;
-  if (rom_sprite_decode(&rspr,serial,serialc)<0) return -1;
-  struct rom_command_reader reader={.v=rspr.cmdv,.c=rspr.cmdc};
-  struct rom_command cmd;
-  while (rom_command_reader_next(&cmd,&reader)>0) {
-    switch (cmd.opcode) {
-      //TODO which sprite fields do we need?
-      //TODO ...do we need sprites?
-    }
-  }
   return 0;
 }
 

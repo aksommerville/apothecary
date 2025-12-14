@@ -5,6 +5,8 @@
 #ifndef SHARED_SYMBOLS_H
 #define SHARED_SYMBOLS_H
 
+#define EGGDEV_importUtil "stdlib,res,graf,font,text"
+
 #define FBW 320
 #define FBH 180
 

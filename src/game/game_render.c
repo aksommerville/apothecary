@@ -1,5 +1,38 @@
 #include "game_internal.h"
 
+/* Mode7 sprite.
+ */
+ 
+void render_mode7(
+  int dstx,int dsty,
+  int srcx,int srcy,int srcw,int srch,
+  double xscale,double yscale,double rotate
+) {
+  rotate+=M_PI; // Easier than fixing the incorrect xform below.
+  double xr=(double)srcw*0.5;
+  double yr=(double)srch*0.5;
+  double sint=sin(rotate);
+  double cost=cos(rotate);
+  double nwx=( xr*xscale)*cost+(-yr*yscale)*sint;
+  double nwy=( xr*xscale)*sint-(-yr*yscale)*cost;
+  double nex=(-xr*xscale)*cost+(-yr*yscale)*sint;
+  double ney=(-xr*xscale)*sint-(-yr*yscale)*cost;
+  double swx=( xr*xscale)*cost+( yr*yscale)*sint;
+  double swy=( xr*xscale)*sint-( yr*yscale)*cost;
+  double sex=(-xr*xscale)*cost+( yr*yscale)*sint;
+  double sey=(-xr*xscale)*sint-( yr*yscale)*cost;
+  graf_set_filter(&g.graf,1);
+  graf_triangle_strip_tex_begin(&g.graf,
+    dstx+(int)nwx,dsty+(int)nwy,srcx     ,srcy     ,
+    dstx+(int)nex,dsty+(int)ney,srcx+srcw,srcy     ,
+    dstx+(int)swx,dsty+(int)swy,srcx     ,srcy+srch
+  );
+  graf_triangle_strip_tex_more(&g.graf,
+    dstx+(int)sex,dsty+(int)sey,srcx+srcw,srcy+srch
+  );
+  graf_set_filter(&g.graf,0);
+}
+
 /* Grid.
  */
  
@@ -12,12 +45,19 @@ static void game_render_grid(struct game *game,int camerax,int cameray) {
   int rowz=(cameray+FBH-1)/NS_sys_tilesize;
   if (colz>=game->map->w) colz=game->map->w-1;
   if (rowz>=game->map->h) rowz=game->map->h-1;
-  graf_draw_tile_buffer(&g.graf,g.texid_tiles,
-    cola*NS_sys_tilesize+(NS_sys_tilesize>>1)-camerax,
-    rowa*NS_sys_tilesize+(NS_sys_tilesize>>1)-cameray,
-    game->map->v+rowa*game->map->w+cola,
-    colz-cola+1,rowz-rowa+1,game->map->w
-  );
+  int dstx0=cola*NS_sys_tilesize+(NS_sys_tilesize>>1)-camerax;
+  int dsty=rowa*NS_sys_tilesize+(NS_sys_tilesize>>1)-cameray;
+  const uint8_t *mrow=game->map->v+rowa*game->map->w+cola;
+  int row=rowa;
+  graf_set_input(&g.graf,g.texid_tiles);
+  for (;row<=rowz;row++,mrow+=game->map->w,dsty+=NS_sys_tilesize) {
+    const uint8_t *mp=mrow;
+    int dstx=dstx0;
+    int col=cola;
+    for (;col<=colz;col++,mp++,dstx+=NS_sys_tilesize) {
+      graf_tile(&g.graf,dstx,dsty,*mp,0);
+    }
+  }
 }
 
 /* Hero.
@@ -60,19 +100,20 @@ static void game_draw_hero(struct game *game,int dstx,int dsty) {
   }
   graf_set_alpha(&g.graf,0x80);
   graf_set_tint(&g.graf,0x000000ff);
-  graf_draw_mode7(&g.graf,g.texid_hero,
+  graf_set_input(&g.graf,g.texid_hero);
+  render_mode7(
     dstx,dsty+shadowdy,
     srcx,srcy,NS_sys_tilesize*3,NS_sys_tilesize*3,0.5f,0.5f,
-    game->racer.t,1
+    game->racer.t
   );
   graf_set_alpha(&g.graf,0xff);
   graf_set_tint(&g.graf,0);
   
   // And then the real thing.
-  graf_draw_mode7(&g.graf,g.texid_hero,
+  render_mode7(
     dstx,dsty,
     srcx,srcy,NS_sys_tilesize*3,NS_sys_tilesize*3,0.5f,0.5f,
-    game->racer.t,1
+    game->racer.t
   );
 }
 
@@ -86,10 +127,10 @@ static void game_draw_arrow(struct game *game,int camerax,int cameray,int target
    */
   if ((targetx>=-NS_sys_tilesize)&&(targetx<FBW+NS_sys_tilesize)&&(targety>=-NS_sys_tilesize)&&(targety<FBH+NS_sys_tilesize)) {
     int dsty=targety-NS_sys_tilesize*3+(int)(sin((game->arrowclock*M_PI*2.0f)/ARROW_CLOCK_PERIOD)*6.0f);
-    graf_draw_decal(&g.graf,g.texid_tiles,
+    graf_decal(&g.graf,
       targetx-NS_sys_tilesize,dsty,
       0,NS_sys_tilesize,
-      NS_sys_tilesize<<1,NS_sys_tilesize<<1,0
+      NS_sys_tilesize<<1,NS_sys_tilesize<<1
     );
   
   /* Target out of view but exists, draw a rotated arrow along the edge.
@@ -126,10 +167,10 @@ static void game_draw_arrow(struct game *game,int camerax,int cameray,int target
     float t=atan2(-dx,dy);
     float scale=sin((game->arrowclock*M_PI*2.0f)/ARROW_CLOCK_PERIOD)*0.125f+0.5f;
     // Leave a 1-pixel border inside the source image. It's drawn with a 2-pixel border.
-    graf_draw_mode7(&g.graf,g.texid_tiles,
+    render_mode7(
       dstx,dsty,
       1,NS_sys_tilesize+1,(NS_sys_tilesize<<1)-2,(NS_sys_tilesize<<1)-2,
-      scale,scale,t,1
+      scale,scale,t
     );
   }
 }
@@ -158,7 +199,7 @@ void game_render(struct game *game) {
   else if (cameray<0) cameray=0;
   else if (cameray+FBH>worldh) cameray=worldh-FBH;
 
-  if (blackout) graf_draw_rect(&g.graf,0,0,FBW,FBH,0x000000ff);
+  if (blackout) graf_fill_rect(&g.graf,0,0,FBW,FBH,0x000000ff);
   
   /* Draw background grid.
    */
@@ -166,11 +207,12 @@ void game_render(struct game *game) {
   
   /* Target sprite.
    */
+  graf_set_input(&g.graf,g.texid_tiles);
   int targetx=999,targety=0;
   if (game->target.type) {
     targetx=(int)game->target.x-camerax;
     targety=(int)game->target.y-cameray;
-    graf_draw_tile(&g.graf,g.texid_tiles,targetx,targety,game->target.tileid,0);
+    graf_tile(&g.graf,targetx,targety,game->target.tileid,0);
   }
   
   /* Bystanders.
@@ -181,13 +223,14 @@ void game_render(struct game *game) {
     for (;i-->0;bystander++) {
       int16_t dstx=(int)bystander->x-camerax;
       int16_t dsty=(int)bystander->y-cameray;
-      graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,bystander->tileid+((bystander->react>0.0)?0x10:0),0);
+      graf_tile(&g.graf,dstx,dsty,bystander->tileid+((bystander->react>0.0)?0x10:0),0);
     }
   }
   
   /* Hero.
    */
   game_draw_hero(game,herox-camerax,heroy-cameray);
+  graf_set_input(&g.graf,g.texid_tiles);
   
   /* Arrow: Either the big animated one, or the little one on the edge.
    */
@@ -203,10 +246,10 @@ void game_render(struct game *game) {
     int min=s/60; s%=60;
     if (min>9) { min=9; s=99; }
     int16_t dstx=FBW-30,dsty=8,xstride=7;
-    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+min,0); dstx+=xstride;
-    if (ms>=250) graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,':',0); dstx+=xstride;
-    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+s/10,0); dstx+=xstride;
-    graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,'0'+s%10,0);
+    graf_tile(&g.graf,dstx,dsty,'0'+min,0); dstx+=xstride;
+    if (ms>=250) graf_tile(&g.graf,dstx,dsty,':',0); dstx+=xstride;
+    graf_tile(&g.graf,dstx,dsty,'0'+s/10,0); dstx+=xstride;
+    graf_tile(&g.graf,dstx,dsty,'0'+s%10,0);
   }
   
   /* Progress indicator left of the clock.
@@ -216,7 +259,7 @@ void game_render(struct game *game) {
     int16_t dsty=8;
     int i=0;
     for (;i<game->map->dropoffc;i++,dstx-=NS_sys_tilesize) {
-      graf_draw_tile(&g.graf,g.texid_tiles,dstx,dsty,(i>=game->dropoffc)?0x3d:0x3c,0);
+      graf_tile(&g.graf,dstx,dsty,(i>=game->dropoffc)?0x3d:0x3c,0);
     }
   }
   
@@ -226,29 +269,35 @@ void game_render(struct game *game) {
     int alpha=256.0-(game->endtime*256.0)/GAME_END_FADE_TIME;
     if (alpha<=0) return;
     if (alpha>0xff) alpha=0xff;
-    graf_draw_rect(&g.graf,0,0,FBW,FBH,0x00000000|alpha);
+    graf_fill_rect(&g.graf,0,0,FBW,FBH,0x00000000|alpha);
   }
   
   /* Pause menu.
    */
   if (game->pause_selp) {
-    graf_draw_rect(&g.graf,0,0,FBW,FBH,0x000000c0);
+    graf_fill_rect(&g.graf,0,0,FBW,FBH,0x000000c0);
     if (!game->texid_resume) {
-      game->texid_resume=font_texres_oneline(g.font,1,17,FBW,0xffffffff);
-      egg_texture_get_status(&game->w_resume,&game->h_resume,game->texid_resume);
+      const char *src=0;
+      int srcc=text_get_string(&src,1,17);
+      game->texid_resume=font_render_to_texture(0,g.font,src,srcc,FBW,font_get_line_height(g.font),0xffffffff);
+      egg_texture_get_size(&game->w_resume,&game->h_resume,game->texid_resume);
     }
     if (!game->texid_menu) {
-      game->texid_menu=font_texres_oneline(g.font,1,18,FBW,0xffffffff);
-      egg_texture_get_status(&game->w_menu,&game->h_menu,game->texid_menu);
+      const char *src=0;
+      int srcc=text_get_string(&src,1,18);
+      game->texid_menu=font_render_to_texture(0,g.font,src,srcc,FBW,font_get_line_height(g.font),0xffffffff);
+      egg_texture_get_size(&game->w_menu,&game->h_menu,game->texid_menu);
     }
     int margin=4;
     int boxw=((game->w_resume>game->w_menu)?game->w_resume:game->w_menu)+(margin<<1);
     int boxh=game->h_resume+game->h_menu+margin*3;
     int dstx=(FBW>>1)-(boxw>>1);
     int dsty=(FBH>>1)-(boxh>>1);
-    graf_draw_rect(&g.graf,dstx,dsty,boxw,boxh,0x200000ff);
-    graf_draw_rect(&g.graf,dstx+1,dsty+1+((game->pause_selp==2)?(game->h_resume+margin):0),boxw-2,game->h_resume+margin*2-2,0x203040ff);
-    graf_draw_decal(&g.graf,game->texid_resume,dstx+(boxw>>1)-(game->w_resume>>1),dsty+margin,0,0,game->w_resume,game->h_resume,0);
-    graf_draw_decal(&g.graf,game->texid_menu,dstx+(boxw>>1)-(game->w_menu>>1),dsty+boxh-margin-game->h_menu,0,0,game->w_menu,game->h_menu,0);
+    graf_fill_rect(&g.graf,dstx,dsty,boxw,boxh,0x200000ff);
+    graf_fill_rect(&g.graf,dstx+1,dsty+1+((game->pause_selp==2)?(game->h_resume+margin):0),boxw-2,game->h_resume+margin*2-2,0x203040ff);
+    graf_set_input(&g.graf,game->texid_resume);
+    graf_decal(&g.graf,dstx+(boxw>>1)-(game->w_resume>>1),dsty+margin,0,0,game->w_resume,game->h_resume);
+    graf_set_input(&g.graf,game->texid_menu);
+    graf_decal(&g.graf,dstx+(boxw>>1)-(game->w_menu>>1),dsty+boxh-margin-game->h_menu,0,0,game->w_menu,game->h_menu);
   }
 }

@@ -2,11 +2,12 @@
 #define GAME_H
 
 #include "egg/egg.h"
-#include "opt/stdlib/egg-stdlib.h"
-#include "opt/graf/graf.h"
-#include "opt/text/text.h"
-#include "opt/rom/rom.h"
-#include "egg_rom_toc.h"
+#include "util/stdlib/egg-stdlib.h"
+#include "util/graf/graf.h"
+#include "util/text/text.h"
+#include "util/font/font.h"
+#include "util/res/res.h"
+#include "egg_res_toc.h"
 #include "shared_symbols.h"
 #include "restype.h"
 
@@ -76,5 +77,15 @@ struct hello *hello_new();
 void hello_input(struct hello *hello,int input,int pvinput);
 int hello_update(struct hello *hello,double elapsed);
 void hello_render(struct hello *hello);
+
+/* We use this for four things: Dot at Hello, Dot's Shadow, Dot, and Offscreen Arrows.
+ * It was a built-in render mode in Egg v1 but Egg v2 has no such thing. We fake it in game_render.c.
+ * Caller must graf_set_input() first.
+ */
+void render_mode7(
+  int dstx,int dsty,
+  int srcx,int srcy,int srcw,int srch,
+  double xscale,double yscale,double rotate
+);
 
 #endif

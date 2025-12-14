@@ -1,22 +1,21 @@
 all:
 .SILENT:
-.SECONDARY:
-PRECMD=echo "  $@" ; mkdir -p "$(@D)" ;
 
-ifneq (,$(strip $(filter clean,$(MAKECMDGOALS))))
+ifeq (,$(EGG_SDK))
+  EGG_SDK:=../egg2
+endif
+EGGDEV:=$(EGG_SDK)/out/eggdev
+
+all:;$(EGGDEV) build
 clean:;rm -rf mid out
-else
-
-OPT_ENABLE:=stdlib graf text rom
-PROJNAME:=apothecary
-PROJRDNS:=com.aksommerville.egggame.apothecary
-ENABLE_SERVER_AUDIO:=
-BUILDABLE_DATA_TYPES:=
-
-ifndef EGG_SDK
-  EGG_SDK:=/home/andy/proj/egg
-endif
-
-include $(EGG_SDK)/etc/tool/common.mk
-
-endif
+run:;$(EGGDEV) run
+web-run:all;$(EGGDEV) serve --htdocs=out/apothecary-web.zip --project=.
+edit:;$(EGGDEV) serve \
+  --htdocs=/data:src/data \
+  --htdocs=EGG_SDK/src/web \
+  --htdocs=EGG_SDK/src/editor \
+  --htdocs=src/editor \
+  --htdocs=/synth.wasm:EGG_SDK/out/web/synth.wasm \n  --htdocs=/build:out/apothecary-web.zip \
+  --htdocs=/out:out \
+  --writeable=src/data \
+  --project=.

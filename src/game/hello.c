@@ -66,8 +66,10 @@ void hello_del(struct hello *hello) {
  
 static int option_set_sub_string(struct option *option,int ix) {
   egg_texture_del(option->sub_texid);
-  option->sub_texid=font_texres_oneline(g.font,1,ix,HELLO_OPTION_WIDTH,0x80ffffff);
-  egg_texture_get_status(&option->subw,&option->subh,option->sub_texid);
+  const char *src=0;
+  int srcc=text_get_string(&src,1,ix);
+  option->sub_texid=font_render_to_texture(0,g.font,src,srcc,HELLO_OPTION_WIDTH,font_get_line_height(g.font),0x80ffffff);
+  egg_texture_get_size(&option->subw,&option->subh,option->sub_texid);
   return 0;
 }
 
@@ -86,8 +88,10 @@ static struct option *hello_add_option(struct hello *hello,int id) {
   struct option *option=hello->optionv+hello->optionc++;
   memset(option,0,sizeof(struct option));
   option->id=id;
-  option->lbl_texid=font_texres_oneline(g.font,1,id,HELLO_OPTION_WIDTH,0xffffffff);
-  egg_texture_get_status(&option->lblw,&option->lblh,option->lbl_texid);
+  const char *src=0;
+  int srcc=text_get_string(&src,1,id);
+  option->lbl_texid=font_render_to_texture(0,g.font,src,srcc,HELLO_OPTION_WIDTH,font_get_line_height(g.font),0xffffffff);
+  egg_texture_get_size(&option->lblw,&option->lblh,option->lbl_texid);
   return option;
 }
  
@@ -111,8 +115,10 @@ static void hello_rebuild_all_labels(struct hello *hello) {
   int i=hello->optionc;
   for (;i-->0;option++) {
     egg_texture_del(option->lbl_texid);
-    option->lbl_texid=font_texres_oneline(g.font,1,option->id,HELLO_OPTION_WIDTH,0xffffffff);
-    egg_texture_get_status(&option->lblw,&option->lblh,option->lbl_texid);
+    const char *src=0;
+    int srcc=text_get_string(&src,1,option->id);
+    option->lbl_texid=font_render_to_texture(0,g.font,src,srcc,HELLO_OPTION_WIDTH,font_get_line_height(g.font),0xffffffff);
+    egg_texture_get_size(&option->lblw,&option->lblh,option->lbl_texid);
     switch (option->id) {
       case HELLO_OPTION_LANGUAGE: option_set_sub_string(option,1); break;
       case HELLO_OPTION_MUSIC: option_set_sub_string(option,g.enable_music?15:16); break;
@@ -125,8 +131,24 @@ static void hello_rebuild_all_labels(struct hello *hello) {
 /* Build list of languages.
  */
  
+static int hello_lang_cb(int lang,void *userdata) {
+  struct hello *hello=userdata;
+  if (hello->langc>=hello->langa) {
+    int na=hello->langa+8;
+    if (na>INT_MAX/sizeof(int)) return -1;
+    void *nv=realloc(hello->langv,sizeof(int)*na);
+    if (!nv) return -1;
+    hello->langv=nv;
+    hello->langa=na;
+  }
+  hello->langv[hello->langc++]=lang;
+  return 0;
+}
+ 
 static int hello_list_languages(struct hello *hello) {
   hello->langc=0;
+  return text_for_each_language(hello_lang_cb,hello);
+  /*XXX need to read (g.rom) ourselves for this; The new text unit doesn't do it.
   int p=0; for (;;p++) {
     int lang=strings_lang_by_index(p);
     if (lang<0) break;
@@ -140,6 +162,7 @@ static int hello_list_languages(struct hello *hello) {
     }
     hello->langv[hello->langc++]=lang;
   }
+  /**/
   return 0;
 }
 
@@ -185,7 +208,7 @@ static void hello_ymotion(struct hello *hello,int d) {
   switch (option->id) {
   
     case HELLO_OPTION_LANGUAGE: {
-        int current=egg_get_language();
+        int current=egg_prefs_get(EGG_PREF_LANG);
         int langp=-1;
         int i=0; for (;i<hello->langc;i++) {
           if (hello->langv[i]==current) {
@@ -197,8 +220,7 @@ static void hello_ymotion(struct hello *hello,int d) {
         langp+=d;
         if (langp<0) langp=hello->langc-1;
         else if (langp>=hello->langc) langp=0;
-        egg_set_language(hello->langv[langp]);
-        strings_check_language();
+        egg_prefs_set(EGG_PREF_LANG,hello->langv[langp]);
         hello_rebuild_all_labels(hello);
       } break;
       
@@ -286,17 +308,19 @@ static void hello_next_message(struct hello *hello) {
       char tmp[16];
       int tmpc=hello_format_time(tmp,sizeof(tmp),g.hiscore);
       char msg[64];
-      struct strings_insertion ins={.mode='s',.s={.v=tmp,.c=tmpc}};
-      int msgc=strings_format(msg,sizeof(msg),1,4,&ins,1);
+      struct text_insertion ins={.mode='s',.s={.v=tmp,.c=tmpc}};
+      int msgc=text_format_res(msg,sizeof(msg),1,4,&ins,1);
       if ((msgc<1)||(msgc>sizeof(msg))) continue;
-      hello->msg_texid=font_tex_oneline(g.font,msg,msgc,FBW,0x808080ff);
-      egg_texture_get_status(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
+      hello->msg_texid=font_render_to_texture(0,g.font,msg,msgc,FBW,font_get_line_height(g.font),0x808080ff);
+      egg_texture_get_size(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
       return;
     }
     
     // Everything else is static text.
-    hello->msg_texid=font_texres_oneline(g.font,1,messagev[hello->msgp],FBW,0x808080ff);
-    egg_texture_get_status(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
+    const char *src=0;
+    int srcc=text_get_string(&src,1,messagev[hello->msgp]);
+    hello->msg_texid=font_render_to_texture(0,g.font,src,srcc,FBW,font_get_line_height(g.font),0x808080ff);
+    egg_texture_get_size(&hello->msg_texw,&hello->msg_texh,hello->msg_texid);
     return;
   }
 }
@@ -324,10 +348,13 @@ int hello_update(struct hello *hello,double elapsed) {
  
 static void hello_draw_option(struct hello *hello,struct option *option,int dstx,int dsty) {
   if (option->sub_texid) {
-    graf_draw_decal(&g.graf,option->lbl_texid,dstx+(HELLO_OPTION_WIDTH>>1)-(option->lblw>>1),dsty+2,0,0,option->lblw,option->lblh,0);
-    graf_draw_decal(&g.graf,option->sub_texid,dstx+(HELLO_OPTION_WIDTH>>1)-(option->subw>>1),dsty+HELLO_OPTION_HEIGHT-option->subh-2,0,0,option->subw,option->subh,0);
+    graf_set_input(&g.graf,option->lbl_texid);
+    graf_decal(&g.graf,dstx+(HELLO_OPTION_WIDTH>>1)-(option->lblw>>1),dsty+2,0,0,option->lblw,option->lblh);
+    graf_set_input(&g.graf,option->sub_texid);
+    graf_decal(&g.graf,dstx+(HELLO_OPTION_WIDTH>>1)-(option->subw>>1),dsty+HELLO_OPTION_HEIGHT-option->subh-2,0,0,option->subw,option->subh);
   } else {
-    graf_draw_decal(&g.graf,option->lbl_texid,dstx+(HELLO_OPTION_WIDTH>>1)-(option->lblw>>1),dsty+(HELLO_OPTION_HEIGHT>>1)-(option->lblh>>1),0,0,option->lblw,option->lblh,0);
+    graf_set_input(&g.graf,option->lbl_texid);
+    graf_decal(&g.graf,dstx+(HELLO_OPTION_WIDTH>>1)-(option->lblw>>1),dsty+(HELLO_OPTION_HEIGHT>>1)-(option->lblh>>1),0,0,option->lblw,option->lblh);
   }
 }
 
@@ -335,7 +362,8 @@ static void hello_draw_option(struct hello *hello,struct option *option,int dstx
  */
  
 void hello_render(struct hello *hello) {
-  graf_draw_rect(&g.graf,0,0,FBW,FBH,0x080420ff);
+  graf_fill_rect(&g.graf,0,0,FBW,FBH,0x080420ff);
+  graf_set_input(&g.graf,g.texid_gross);
   
   /* When Dot flies right-to-left, she's behind the title.
    */
@@ -348,10 +376,10 @@ void hello_render(struct hello *hello) {
     double rangex=FBW+167.0;
     int dstx=FBW-(int)(normx*rangex)+83;
     graf_set_tint(&g.graf,0x00000080);
-    graf_draw_mode7(&g.graf,g.texid_gross,
+    render_mode7(
       dstx,90,
       0,101,167,121,
-      -0.500,0.500,0.0,1
+      -0.500,0.500,0.0
     );
     graf_set_tint(&g.graf,0);
   }
@@ -364,7 +392,7 @@ void hello_render(struct hello *hello) {
   } else if (hello->clock<3.000) {
     titley=-100+(int)(((hello->clock-1.000)*100.0)/2.000);
   }
-  graf_draw_decal(&g.graf,g.texid_gross,0,titley,0,0,320,100,0);
+  graf_decal(&g.graf,0,titley,0,0,320,100);
   
   /* Credits and such at the bottom.
    */
@@ -379,7 +407,8 @@ void hello_render(struct hello *hello) {
     }
     if (alpha<0) alpha=0; else if (alpha>0xff) alpha=0xff;
     graf_set_alpha(&g.graf,alpha);
-    graf_draw_decal(&g.graf,hello->msg_texid,dstx,dsty,0,0,hello->msg_texw,hello->msg_texh,0);
+    graf_set_input(&g.graf,hello->msg_texid);
+    graf_decal(&g.graf,dstx,dsty,0,0,hello->msg_texw,hello->msg_texh);
     graf_set_alpha(&g.graf,0xff);
   }
   
@@ -389,7 +418,8 @@ void hello_render(struct hello *hello) {
     double normx=(dotperiod-6.0)/1.0;
     double rangex=FBW+167.0;
     int dstx=-167+(int)(normx*rangex);
-    graf_draw_decal(&g.graf,g.texid_gross,dstx,40,0,101,167,121,dotxform);
+    graf_set_input(&g.graf,g.texid_gross);
+    graf_decal_xform(&g.graf,dstx,40,0,101,167,121,dotxform);
   }
   
   /* Options and cursor.
@@ -398,7 +428,7 @@ void hello_render(struct hello *hello) {
     int dstx0=(FBW>>1)-(HELLO_OPTION_WIDTH>>1);
     int dsty=110;
     int i=hello->optionp;
-    graf_draw_rect(&g.graf,dstx0,dsty,HELLO_OPTION_WIDTH,HELLO_OPTION_HEIGHT,0xc0a00060);
+    graf_fill_rect(&g.graf,dstx0,dsty,HELLO_OPTION_WIDTH,HELLO_OPTION_HEIGHT,0xc0a00060);
     dstx0+=hello->option_slide*HELLO_OPTION_WIDTH;
     int dstx=dstx0;
     while (dstx>-HELLO_OPTION_WIDTH) {

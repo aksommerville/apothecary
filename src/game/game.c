@@ -17,21 +17,21 @@ void game_del(struct game *game) {
  
 static int game_process_map_commands(struct game *game) {
   int heroc=0,pickupc=0;
-  struct rom_command_reader reader={.v=game->map->cmdv,.c=game->map->cmdc};
-  struct rom_command cmd;
-  while (rom_command_reader_next(&cmd,&reader)>0) {
+  struct cmdlist_reader reader={.v=game->map->cmdv,.c=game->map->cmdc};
+  struct cmdlist_entry cmd;
+  while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
       case CMD_map_hero: {
           heroc++;
-          game->racer.x=(cmd.argv[0]+0.5)*NS_sys_tilesize;
-          game->racer.y=(cmd.argv[1]+0.5)*NS_sys_tilesize;
+          game->racer.x=(cmd.arg[0]+0.5)*NS_sys_tilesize;
+          game->racer.y=(cmd.arg[1]+0.5)*NS_sys_tilesize;
         } break;
       case CMD_map_pickup: {
           pickupc++;
-          game->target.x=(cmd.argv[0]+0.5)*NS_sys_tilesize;
-          game->target.y=(cmd.argv[1]+0.5)*NS_sys_tilesize;
+          game->target.x=(cmd.arg[0]+0.5)*NS_sys_tilesize;
+          game->target.y=(cmd.arg[1]+0.5)*NS_sys_tilesize;
           game->target.type=NS_target_pickup;
-          game->target.tileid=0x12; //TODO Will this always be the same thing? If not, how to select?
+          game->target.tileid=0x12;
         } break;
     }
   }
